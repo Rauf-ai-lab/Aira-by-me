@@ -363,13 +363,14 @@
       </div>
 
       <div class="modal-body">
-        <!-- Tab 1: Puter Cloud & Account -->
+        <!-- Tab 1: Profile & Account -->
         <div class="settings-section">
-          <h4 class="section-heading">Puter Account & Cloud Sync</h4>
+          <h4 class="section-heading">Profile & Account</h4>
           <div class="account-status-box" id="accountStatusBox">
-            <div class="account-avatar-large" id="settingsAvatarLarge">A</div>
+            <div class="account-avatar-large" id="settingsAvatarLarge">G</div>
             <div class="account-details">
-              <div class="account-name-lg" id="settingsUserName">Guest (Local Mode)</div>
+              <div class="account-name-lg" id="settingsUserName">Guest User</div>
+              <div class="account-email" id="settingsUserEmail">Email not available</div>
               <div class="account-sub" id="settingsUserStatus">Sign in with Puter to sync chats across devices</div>
             </div>
             <button class="primary-btn sm" id="settingsAuthBtn">Sign In with Puter</button>
@@ -477,6 +478,39 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AIRA LOGIN SCREEN (Shown when logged out) -->
+  <div class="login-screen-overlay" id="loginScreen" style="display: none;">
+    <div class="login-card">
+      <div class="login-brand-spark">
+        <svg viewBox="0 0 24 24" fill="none" class="spark-icon">
+          <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="url(#loginSparkGrad)"/>
+          <defs>
+            <linearGradient id="loginSparkGrad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#4285F4"/>
+              <stop offset="0.5" stop-color="#9B72CB"/>
+              <stop offset="1" stop-color="#D96570"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <h2 class="login-title">Welcome to <span class="gradient-text">Aira</span></h2>
+      <p class="login-subtitle">Sign in with your Puter account to access your AI assistant, manage chats, and sync preferences.</p>
+      
+      <div class="login-actions">
+        <button class="primary-btn login-btn" id="loginScreenAuthBtn" data-test-tag="login_button">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+          <span>Sign In with Puter</span>
+        </button>
+        <button class="secondary-btn text-btn" id="loginGuestBtn" data-test-tag="guest_button">
+          <span>Continue as Guest</span>
+        </button>
+      </div>
+      <div class="login-footer-info">
+        <span>Official Puter.js Authentication</span>
       </div>
     </div>
   </div>

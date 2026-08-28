@@ -139,6 +139,10 @@ fun AiraWebViewContainer(
               .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(context))
               .build()
 
+          val cookieManager = android.webkit.CookieManager.getInstance()
+          cookieManager.setAcceptCookie(true)
+          cookieManager.setAcceptThirdPartyCookies(this, true)
+
           settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
@@ -150,12 +154,70 @@ fun AiraWebViewContainer(
             cacheMode = WebSettings.LOAD_DEFAULT
             useWideViewPort = true
             loadWithOverviewMode = true
-            setSupportZoom(false)
+            setSupportZoom(true)
+            builtInZoomControls = true
+            displayZoomControls = false
+            setSupportMultipleWindows(true)
+            javaScriptCanOpenWindowsAutomatically = true
           }
 
           webChromeClient = object : WebChromeClient() {
             override fun onPermissionRequest(request: PermissionRequest?) {
               request?.let { onRequestWebPermission(it) }
+            }
+
+            override fun onCreateWindow(
+                view: WebView?,
+                isDialog: Boolean,
+                isUserGesture: Boolean,
+                resultMsg: android.os.Message?
+            ): Boolean {
+              val dialog = android.app.Dialog(context, android.R.style.Theme_Black_NoTitleBar_Fullscreen)
+              val popupWebView = WebView(context).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                settings.apply {
+                  javaScriptEnabled = true
+                  domStorageEnabled = true
+                  databaseEnabled = true
+                  setSupportMultipleWindows(true)
+                  javaScriptCanOpenWindowsAutomatically = true
+                  mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                  setSupportZoom(true)
+                  builtInZoomControls = true
+                  displayZoomControls = false
+                }
+                val popupCookieManager = android.webkit.CookieManager.getInstance()
+                popupCookieManager.setAcceptCookie(true)
+                popupCookieManager.setAcceptThirdPartyCookies(this, true)
+
+                webChromeClient = object : WebChromeClient() {
+                  override fun onCloseWindow(window: WebView?) {
+                    dialog.dismiss()
+                    window?.destroy()
+                  }
+                }
+                webViewClient = object : WebViewClient() {
+                  override fun shouldOverrideUrlLoading(
+                      view: WebView?,
+                      request: WebResourceRequest?
+                  ): Boolean {
+                    return false
+                  }
+                }
+              }
+              dialog.setContentView(popupWebView)
+              dialog.setOnDismissListener {
+                popupWebView.destroy()
+              }
+              dialog.show()
+
+              val transport = resultMsg?.obj as? WebView.WebViewTransport
+              transport?.webView = popupWebView
+              resultMsg?.sendToTarget()
+              return true
             }
 
             override fun onShowFileChooser(

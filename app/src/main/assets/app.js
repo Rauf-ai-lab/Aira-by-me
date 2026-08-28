@@ -124,11 +124,18 @@
     lightboxCloseBtn: document.getElementById('lightboxCloseBtn'),
     lightboxDownloadBtn: document.getElementById('lightboxDownloadBtn'),
 
+    // Profile & Login
+    userProfileCard: document.getElementById('userProfileCard'),
+    loginScreen: document.getElementById('loginScreen'),
+    loginScreenAuthBtn: document.getElementById('loginScreenAuthBtn'),
+    loginGuestBtn: document.getElementById('loginGuestBtn'),
+
     // Settings Modal
     settingsModal: document.getElementById('settingsModal'),
     closeSettingsModalBtn: document.getElementById('closeSettingsModalBtn'),
     settingsAvatarLarge: document.getElementById('settingsAvatarLarge'),
     settingsUserName: document.getElementById('settingsUserName'),
+    settingsUserEmail: document.getElementById('settingsUserEmail'),
     settingsUserStatus: document.getElementById('settingsUserStatus'),
     settingsAuthBtn: document.getElementById('settingsAuthBtn'),
     settingsDefaultModelSelect: document.getElementById('settingsDefaultModelSelect'),
@@ -191,19 +198,28 @@
         state.isSignedIn = puter.auth.isSignedIn();
         if (state.isSignedIn) {
           state.currentUser = await puter.auth.getUser();
+          if (dom.loginScreen) dom.loginScreen.style.display = 'none';
+        } else {
+          state.currentUser = null;
+          if (dom.loginScreen) dom.loginScreen.style.display = 'flex';
         }
+      } else {
+        state.isSignedIn = false;
+        state.currentUser = null;
+        if (dom.loginScreen) dom.loginScreen.style.display = 'flex';
       }
     } catch (err) {
       console.warn('Puter Auth Check warning:', err);
       state.isSignedIn = false;
       state.currentUser = null;
+      if (dom.loginScreen) dom.loginScreen.style.display = 'flex';
     }
     updateAuthUI();
   }
 
   async function handleAuthToggle() {
     if (!window.puter || !puter.auth) {
-      showToast('Puter.js SDK not available', 'error');
+      showToast('Puter.js SDK is initializing, please try again.', 'warning');
       return;
     }
 
@@ -212,46 +228,65 @@
         await puter.auth.signOut();
         state.isSignedIn = false;
         state.currentUser = null;
+        if (dom.loginScreen) dom.loginScreen.style.display = 'flex';
         showToast('Signed out from Puter', 'info');
       } else {
         showToast('Opening Puter Sign-in...', 'info');
-        state.currentUser = await puter.auth.signIn();
-        state.isSignedIn = true;
-        showToast(`Welcome ${state.currentUser.username || 'User'}!`, 'success');
-        await loadPuterData();
+        await puter.auth.signIn();
+        state.currentUser = await puter.auth.getUser();
+        state.isSignedIn = puter.auth.isSignedIn() || !!state.currentUser;
+
+        if (state.isSignedIn) {
+          if (dom.loginScreen) dom.loginScreen.style.display = 'none';
+          const displayName = state.currentUser?.username || state.currentUser?.name || 'User';
+          showToast(`Welcome back, ${displayName}!`, 'success');
+          await loadPuterData();
+        }
       }
       updateAuthUI();
       saveLocalState();
     } catch (err) {
       console.error('Auth error:', err);
-      showToast('Authentication failed or cancelled: ' + (err.message || ''), 'error');
+      const errMsg = err?.message || 'Authentication was cancelled or could not be completed.';
+      showToast(errMsg, 'error');
     }
   }
 
   function updateAuthUI() {
     if (state.isSignedIn && state.currentUser) {
-      const name = state.currentUser.username || state.currentUser.email || 'Puter User';
-      const initial = name.charAt(0).toUpperCase();
-      dom.userName.textContent = name;
+      const user = state.currentUser;
+      const username = user.username || user.name || 'Puter User';
+      const email = (user.email && typeof user.email === 'string' && user.email.trim().length > 0)
+        ? user.email.trim()
+        : 'Email not available';
+      const initial = username.charAt(0).toUpperCase();
+
+      dom.userName.textContent = username;
       dom.userAvatarLetter.textContent = initial;
-      dom.userStatus.textContent = 'Puter Cloud Connected';
+      dom.userStatus.textContent = email !== 'Email not available' ? email : 'Puter Cloud Connected';
       dom.authActionBtn.title = 'Sign Out';
       dom.authActionBtn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>`;
 
       dom.settingsAvatarLarge.textContent = initial;
-      dom.settingsUserName.textContent = name;
+      dom.settingsUserName.textContent = username;
+      if (dom.settingsUserEmail) {
+        dom.settingsUserEmail.textContent = email;
+      }
       dom.settingsUserStatus.textContent = 'Connected with Puter Cloud sync active';
       dom.settingsAuthBtn.textContent = 'Sign Out';
       dom.settingsAuthBtn.className = 'danger-btn sm';
     } else {
       dom.userName.textContent = 'Guest User';
       dom.userAvatarLetter.textContent = 'G';
-      dom.userStatus.textContent = 'Local Mode (Sign in to sync)';
+      dom.userStatus.textContent = 'Local Mode (Signed Out)';
       dom.authActionBtn.title = 'Sign In with Puter';
       dom.authActionBtn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>`;
 
       dom.settingsAvatarLarge.textContent = 'G';
       dom.settingsUserName.textContent = 'Guest User';
+      if (dom.settingsUserEmail) {
+        dom.settingsUserEmail.textContent = 'Email not available';
+      }
       dom.settingsUserStatus.textContent = 'Sign in with Puter to sync chats across devices';
       dom.settingsAuthBtn.textContent = 'Sign In with Puter';
       dom.settingsAuthBtn.className = 'primary-btn sm';
@@ -1403,8 +1438,26 @@
     };
     dom.clearAllChatsBtn.onclick = clearAllConversations;
 
-    dom.authActionBtn.onclick = handleAuthToggle;
+    dom.authActionBtn.onclick = (e) => {
+      e.stopPropagation();
+      handleAuthToggle();
+    };
     dom.settingsAuthBtn.onclick = handleAuthToggle;
+    if (dom.loginScreenAuthBtn) {
+      dom.loginScreenAuthBtn.onclick = handleAuthToggle;
+    }
+    if (dom.loginGuestBtn) {
+      dom.loginGuestBtn.onclick = () => {
+        if (dom.loginScreen) dom.loginScreen.style.display = 'none';
+        showToast('Continuing as Guest', 'info');
+      };
+    }
+    if (dom.userProfileCard) {
+      dom.userProfileCard.onclick = () => {
+        dom.settingsModal.style.display = 'flex';
+        if (window.innerWidth <= 768) closeMobileSidebar();
+      };
+    }
 
     // Lightbox Modal
     dom.lightboxCloseBtn.onclick = closeLightbox;
