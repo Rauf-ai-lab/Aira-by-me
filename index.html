@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Aira - Intelligent AI Assistant</title>
-  <meta name="description" content="Aira - Modern AI Chat & Image Generation powered by Puter.js by Developer Rauf">
+  <title>Aira - Personal AI Assistant</title>
+  <meta name="description" content="Aira - Personal AI Assistant created with care by Rauf">
   <meta name="theme-color" content="#0d1117">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,7 +42,7 @@
           </div>
           <div class="brand-text">
             <div class="brand-title">Aira</div>
-            <span class="brand-subtitle">AI Assistant</span>
+            <span class="brand-subtitle">by Rauf</span>
           </div>
         </div>
         <button class="icon-btn sidebar-close-btn" id="closeSidebarBtn" title="Close sidebar" aria-label="Close sidebar">
@@ -55,6 +55,10 @@
         <button class="new-chat-btn" id="newChatBtn" data-test-tag="new_chat_button">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
           <span>New Chat</span>
+        </button>
+        <button class="quick-action-btn live-voice-sidebar-btn" id="sidebarLiveVoiceBtn" title="Start Live Voice Session">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span>Live Voice Call</span>
         </button>
         <button class="quick-action-btn" id="sidebarImageGenBtn" title="Create Images with AI">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
@@ -85,7 +89,7 @@
           </div>
           <div class="user-info">
             <div class="user-name" id="userName">Guest User</div>
-            <div class="user-status" id="userStatus">Puter Cloud Offline</div>
+            <div class="user-status" id="userStatus">Created with care by Rauf</div>
           </div>
           <button class="icon-btn sm" id="authActionBtn" title="Sign In / Account" aria-label="Account">
             <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
@@ -97,10 +101,10 @@
             <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span>Settings</span>
           </button>
-          <a href="https://developer.puter.com" target="_blank" rel="noopener noreferrer" class="puter-badge" title="Powered by Puter.js">
-            <span class="puter-dot"></span>
-            <span>Puter.js</span>
-          </a>
+          <div class="developer-credit-badge" title="Created with care by Rauf">
+            <span class="developer-spark-dot"></span>
+            <span>Rauf</span>
+          </div>
         </div>
       </div>
     </aside>
@@ -114,28 +118,38 @@
             <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
           </button>
           
-          <!-- Model Selector Pill -->
+          <!-- Model Selector Pill with Smart Categories -->
           <div class="model-picker-dropdown" id="modelPickerContainer">
-            <button class="model-select-btn" id="modelSelectBtn" data-test-tag="model_selector_button" aria-expanded="false" title="Select AI Model">
+            <button class="model-select-btn" id="modelSelectBtn" data-test-tag="model_selector_button" aria-expanded="false" title="Select AI Engine">
               <span class="model-current-icon" id="currentModelIcon">🤖</span>
               <div class="model-current-info">
-                <span class="model-current-name" id="currentModelDisplay">Aira 3.5 Sonnet</span>
-                <span class="model-current-capability" id="currentModelCapability">AI / Chat • Reasoning</span>
+                <span class="model-current-name" id="currentModelDisplay">Aira AI</span>
+                <span class="model-current-capability" id="currentModelCapability">General AI</span>
               </div>
               <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" class="dropdown-chevron"><path d="M6 9l6 6 6-6"/></svg>
             </button>
 
-            <!-- Dropdown Menu -->
+            <!-- Categorized Dropdown Menu -->
             <div class="model-menu" id="modelMenu">
-              <div class="model-menu-header">MODEL</div>
+              <div class="model-menu-header">
+                <span>SELECT AI ENGINE</span>
+                <span class="model-menu-sub">by Rauf</span>
+              </div>
               <div class="model-options" id="modelOptionsList">
-                <!-- Dynamically generated model options -->
+                <!-- Dynamically categorized models generated here -->
               </div>
             </div>
           </div>
         </div>
 
         <div class="top-nav-right">
+          <!-- Live Voice Call Button -->
+          <button class="live-call-pill-btn" id="liveVoiceCallBtn" title="Start Live Voice Conversation" data-test-tag="live_voice_button">
+            <span class="live-dot-pulse"></span>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span class="live-text">Live Voice</span>
+          </button>
+
           <!-- Mode Tabs (Chat vs Image Studio) -->
           <div class="mode-tabs">
             <button class="mode-tab active" id="modeChatTab">
@@ -144,7 +158,7 @@
             </button>
             <button class="mode-tab" id="modeImageTab">
               <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-              <span>Image AI</span>
+              <span>Image</span>
             </button>
           </div>
 
@@ -157,7 +171,7 @@
 
       <!-- Scrollable Message Canvas -->
       <div class="chat-canvas" id="chatCanvas">
-        <!-- WELCOME HERO VIEW (Shown when no messages in active chat) -->
+        <!-- WELCOME HERO VIEW -->
         <div class="welcome-container" id="welcomeContainer">
           <div class="welcome-spark-hero">
             <div class="spark-pulse-ring"></div>
@@ -176,36 +190,52 @@
           <h1 class="welcome-title">
             <span class="gradient-text">Hello, I'm Aira</span>
           </h1>
-          <p class="welcome-subtitle">Your intelligent Puter.js AI workspace. How can I assist your creativity today?</p>
+          <p class="welcome-subtitle">Hi, I’m Aira — your personal assistant, created with care by Rauf.</p>
 
-          <!-- Suggestion Cards -->
+          <!-- Live Voice Hero Action -->
+          <button class="live-voice-hero-card" id="welcomeLiveVoiceBtn">
+            <div class="hero-voice-glow"></div>
+            <div class="hero-voice-icon">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+            </div>
+            <div class="hero-voice-text">
+              <div class="hero-voice-title">Start Live Voice Conversation</div>
+              <div class="hero-voice-desc">Speak naturally with Aira in real time — hands-free phone conversation</div>
+            </div>
+            <div class="hero-voice-action">
+              <span>Talk Now</span>
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </button>
+
+          <!-- Intelligent Quick Action Suggestion Cards -->
           <div class="suggestion-grid">
-            <button class="suggestion-card" data-prompt="Explain quantum computing simply with real-world analogies">
+            <button class="suggestion-card" data-action="explain" data-prompt="Explain quantum computing simply with real-world analogies">
               <div class="suggestion-icon">⚛️</div>
               <div class="suggestion-text">
                 <div class="suggestion-heading">Explain Concepts</div>
-                <div class="suggestion-desc">Quantum computing in simple words</div>
+                <div class="suggestion-desc">Auto-selects General AI engine</div>
               </div>
             </button>
-            <button class="suggestion-card" data-prompt="Write a modern responsive landing page layout in HTML and Tailwind CSS">
+            <button class="suggestion-card" data-action="code" data-prompt="Write a modern responsive landing page layout in HTML and CSS with clean typography">
               <div class="suggestion-icon">💻</div>
               <div class="suggestion-text">
                 <div class="suggestion-heading">Write Code</div>
-                <div class="suggestion-desc">Clean responsive landing page</div>
+                <div class="suggestion-desc">Auto-selects Coding engine</div>
               </div>
             </button>
-            <button class="suggestion-card" data-prompt="Generate an ethereal futuristic cyberpunk city at dusk with neon lights and flying cars" data-mode="image">
+            <button class="suggestion-card" data-action="art" data-prompt="Generate an ethereal futuristic cyberpunk city at dusk with neon lights and flying cars" data-mode="image">
               <div class="suggestion-icon">🎨</div>
               <div class="suggestion-text">
                 <div class="suggestion-heading">Create Artwork</div>
-                <div class="suggestion-desc">Cyberpunk city with neon lights</div>
+                <div class="suggestion-desc">Auto-selects Image Generation engine</div>
               </div>
             </button>
-            <button class="suggestion-card" data-prompt="Help me brainstorm 5 innovative SaaS business ideas for AI automation">
+            <button class="suggestion-card" data-action="brainstorm" data-prompt="Help me brainstorm 5 innovative business ideas with clear value propositions">
               <div class="suggestion-icon">💡</div>
               <div class="suggestion-text">
                 <div class="suggestion-heading">Brainstorm Ideas</div>
-                <div class="suggestion-desc">Creative SaaS product concepts</div>
+                <div class="suggestion-desc">Creative structured planning</div>
               </div>
             </button>
           </div>
@@ -221,10 +251,10 @@
           <div class="image-studio-header">
             <div class="studio-badge">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-              <span>Puter txt2img Engine</span>
+              <span>Image Synthesis Engine</span>
             </div>
             <h2>Aira Image Studio</h2>
-            <p>Generate high quality visual assets directly to Puter Cloud storage.</p>
+            <p>Generate high quality visual creations with prompt presets and studio styling.</p>
           </div>
 
           <div class="image-generator-form">
@@ -257,27 +287,94 @@
               <div class="empty-gallery" id="emptyGallery">
                 <svg viewBox="0 0 24 24" width="36" height="36" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.3"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
                 <p>No generated images yet</p>
-                <small>Enter a prompt above to create artwork with Puter.ai</small>
+                <small>Enter a prompt above to create artwork</small>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- VOICE INPUT STATUS OVERLAY -->
-      <div class="voice-status-bar" id="voiceStatusBar" style="display: none;">
-        <div class="voice-wave-container">
-          <div class="voice-bar"></div>
-          <div class="voice-bar"></div>
-          <div class="voice-bar"></div>
-          <div class="voice-bar"></div>
-          <div class="voice-bar"></div>
+      <!-- LIVE VOICE CONVERSATION FULL MODAL / OVERLAY -->
+      <div class="live-voice-overlay" id="liveVoiceOverlay" style="display: none;">
+        <div class="live-voice-backdrop"></div>
+        <div class="live-voice-card">
+          <!-- Voice Session Header -->
+          <div class="live-voice-header">
+            <div class="live-session-tag">
+              <span class="live-dot-pulse"></span>
+              <span id="liveVoiceSessionState">Live Voice Call</span>
+            </div>
+            <button class="icon-btn live-close-btn" id="liveVoiceCloseBtn" title="End Call" aria-label="End Call">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          <!-- Visualizer & Animated Orb -->
+          <div class="live-voice-center">
+            <div class="live-orb-container" id="liveOrbContainer">
+              <div class="live-orb-pulse ring-3"></div>
+              <div class="live-orb-pulse ring-2"></div>
+              <div class="live-orb-pulse ring-1"></div>
+              <div class="live-orb-core">
+                <div class="live-spark-icon">
+                  <svg viewBox="0 0 24 24" fill="none" width="42" height="42">
+                    <path d="M12 2L14.8 9.2L22 12L14.8 14.8L12 22L9.2 14.8L2 12L9.2 9.2L12 2Z" fill="url(#liveSparkGrad)"/>
+                    <defs>
+                      <linearGradient id="liveSparkGrad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#38bdf8"/>
+                        <stop offset="0.5" stop-color="#818cf8"/>
+                        <stop offset="1" stop-color="#c084fc"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="live-status-badge" id="liveStatusBadge">
+              <span class="live-status-icon" id="liveStatusIcon">🎙️</span>
+              <span class="live-status-text" id="liveVoiceStatusText">Connecting to Aira...</span>
+            </div>
+
+            <!-- Waveform bars -->
+            <div class="live-waveform" id="liveWaveform">
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+            </div>
+
+            <!-- Real-time subtitle/transcript preview (secondary) -->
+            <div class="live-transcript-box" id="liveTranscriptBox">
+              <p class="live-transcript-text" id="liveTranscriptText">"Hi! I'm listening. Speak freely..."</p>
+            </div>
+          </div>
+
+          <!-- Bottom Voice Call Controls -->
+          <div class="live-voice-controls">
+            <!-- Mute / Unmute Toggle -->
+            <button class="live-ctrl-btn mute-btn" id="liveVoiceMuteBtn" title="Mute Microphone">
+              <svg class="mic-on-icon" viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+              <svg class="mic-off-icon" viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" style="display: none;"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+              <span id="liveMuteBtnLabel">Mute</span>
+            </button>
+
+            <!-- End Call (Hang Up) Button -->
+            <button class="live-ctrl-btn end-call-btn" id="liveVoiceEndBtn" title="End Call">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08c-.18-.17-.29-.42-.29-.7 0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg>
+              <span>End Call</span>
+            </button>
+
+            <!-- Toggle Live Transcript Subtitles -->
+            <button class="live-ctrl-btn sub-toggle-btn" id="liveTranscriptToggleBtn" title="Toggle Live Transcript">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span>Captions</span>
+            </button>
+          </div>
         </div>
-        <span class="voice-status-text" id="voiceStatusText">Listening to your voice...</span>
-        <button class="voice-stop-btn" id="cancelVoiceBtn" title="Stop listening">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
-          <span>Done</span>
-        </button>
       </div>
 
       <!-- COMPOSER BAR -->
@@ -305,14 +402,14 @@
           <textarea 
             id="chatInput" 
             class="composer-textarea" 
-            placeholder="Ask Aira anything or describe an image to create..." 
+            placeholder="Ask Aira anything or describe an image..." 
             rows="1" 
             data-test-tag="message_input"
           ></textarea>
 
           <div class="composer-actions-right">
-            <!-- Voice Microphone Button -->
-            <button class="composer-btn mic-btn" id="micBtn" title="Voice Input (Speech-to-Text)" aria-label="Microphone" data-test-tag="microphone_button">
+            <!-- Voice Input Button (Launches Live Voice or Voice Input) -->
+            <button class="composer-btn mic-btn" id="micBtn" title="Start Live Voice Session" aria-label="Microphone" data-test-tag="microphone_button">
               <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
             </button>
 
@@ -326,9 +423,9 @@
 
         <!-- Composer Footer -->
         <div class="composer-footer-text">
-          <span>Aira can make mistakes. Verify important info.</span>
+          <span>Created with care by Rauf</span>
           <span class="footer-separator">•</span>
-          <a href="https://developer.puter.com" target="_blank" rel="noopener noreferrer" class="footer-puter-link">Powered by Puter</a>
+          <span>Powered by Rauf</span>
         </div>
       </div>
     </main>
@@ -374,9 +471,9 @@
             <div class="account-details">
               <div class="account-name-lg" id="settingsUserName">Guest User</div>
               <div class="account-email" id="settingsUserEmail">Email not available</div>
-              <div class="account-sub" id="settingsUserStatus">Sign in with Puter to sync chats across devices</div>
+              <div class="account-sub" id="settingsUserStatus">Sign in to sync chats across devices</div>
             </div>
-            <button class="primary-btn sm" id="settingsAuthBtn">Sign In with Puter</button>
+            <button class="primary-btn sm" id="settingsAuthBtn">Sign In</button>
           </div>
         </div>
 
@@ -401,8 +498,8 @@
           <h4 class="section-heading">Default AI Engine</h4>
           <div class="setting-row">
             <div>
-              <div class="setting-label">Selected Model</div>
-              <div class="setting-hint">Puter.ai engine utilized for new conversations</div>
+              <div class="setting-label">Selected Engine</div>
+              <div class="setting-hint">Default engine utilized for new conversations</div>
             </div>
             <select class="settings-select" id="settingsDefaultModelSelect">
               <!-- Dynamically filled -->
@@ -414,7 +511,7 @@
               <div class="setting-hint">Custom instructions to shape Aira's behavior</div>
             </div>
           </div>
-          <textarea class="settings-textarea" id="settingsSystemPrompt" rows="2" placeholder="e.g., You are Aira, a brilliant, concise, and helpful AI assistant..."></textarea>
+          <textarea class="settings-textarea" id="settingsSystemPrompt" rows="2" placeholder="e.g., You are Aira, an intelligent, empathetic, and natural personal assistant created with care by Rauf..."></textarea>
         </div>
 
         <!-- Tab 4: Voice & Speech -->
@@ -423,7 +520,7 @@
           <div class="setting-row">
             <div>
               <div class="setting-label">Auto-Play Voice Responses</div>
-              <div class="setting-hint">Automatically speak AI responses via Puter txt2speech</div>
+              <div class="setting-hint">Automatically speak AI responses in chat</div>
             </div>
             <label class="toggle-switch">
               <input type="checkbox" id="settingsAutoSpeechToggle">
@@ -441,7 +538,7 @@
 
         <!-- Tab 5: Data & Storage -->
         <div class="settings-section">
-          <h4 class="section-heading">Cloud Storage & Data Management</h4>
+          <h4 class="section-heading">Storage & Data Management</h4>
           <div class="data-actions-grid">
             <button class="secondary-btn" id="exportDataBtn">
               <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
@@ -449,7 +546,7 @@
             </button>
             <button class="secondary-btn" id="syncPuterKvBtn">
               <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-              <span>Sync with Puter KV</span>
+              <span>Sync Cloud Storage</span>
             </button>
           </div>
           <div class="setting-row danger-row">
@@ -470,14 +567,13 @@
                 <svg viewBox="0 0 24 24" fill="none" class="spark-icon"><path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="url(#aboutSparkGrad)"/><defs><linearGradient id="aboutSparkGrad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#c084fc"/></linearGradient></defs></svg>
               </div>
               <div>
-                <strong>Aira AI Assistant v1.0.0</strong>
+                <strong>Aira AI Assistant</strong>
                 <div class="developer-tag">Developer: <span>Rauf</span></div>
               </div>
             </div>
-            <p class="about-text">Aira is a modern AI workspace powered by the official Puter.js SDK. Provides real-time streaming conversations, multi-model selection, voice input/output, OCR vision analysis, image synthesis, and cloud storage.</p>
+            <p class="about-text">Aira is a personal assistant created with care by Rauf. Features real-time streaming conversations, smart categorized AI engines, live duplex voice calling, vision analysis, high-resolution artwork generation, and cloud sync.</p>
             <div class="about-links">
-              <a href="https://developer.puter.com" target="_blank" rel="noopener noreferrer" class="link-btn">Puter.js Documentation</a>
-              <a href="https://puter.com" target="_blank" rel="noopener noreferrer" class="link-btn">Puter Cloud</a>
+              <div class="creator-badge-text">Powered by Rauf</div>
             </div>
           </div>
         </div>
@@ -501,19 +597,19 @@
         </svg>
       </div>
       <h2 class="login-title">Welcome to <span class="gradient-text">Aira</span></h2>
-      <p class="login-subtitle">Sign in with your Puter account to access your AI assistant, manage chats, and sync preferences.</p>
+      <p class="login-subtitle">Your personal assistant, created with care by Rauf. Sign in to access all AI engines, save conversations, and sync across devices.</p>
       
       <div class="login-actions">
         <button class="primary-btn login-btn" id="loginScreenAuthBtn" data-test-tag="login_button">
           <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
-          <span>Sign In with Puter</span>
+          <span>Sign In / Connect</span>
         </button>
         <button class="secondary-btn text-btn" id="loginGuestBtn" data-test-tag="guest_button">
           <span>Continue as Guest</span>
         </button>
       </div>
       <div class="login-footer-info">
-        <span>Official Puter.js Authentication</span>
+        <span>Created with care by Rauf</span>
       </div>
     </div>
   </div>
@@ -524,3 +620,4 @@
   <script src="app.js"></script>
 </body>
 </html>
+

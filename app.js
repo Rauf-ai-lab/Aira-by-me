@@ -1,14 +1,13 @@
 /**
- * AIRA AI - Web Application
- * Developer: Rauf
- * Powered by Puter.js SDK (https://developer.puter.com)
+ * AIRA AI - Personal Assistant
+ * Developer: Rauf | Powered by Rauf
  */
 
 (() => {
   'use strict';
 
   // ==========================================
-  // 1. STATE & CONFIGURATION
+  // 1. CONFIGURATION & STATE
   // ==========================================
   const APP_CONFIG = {
     appName: 'Aira',
@@ -19,7 +18,29 @@
     kvPrefsKey: 'aira_v1_preferences'
   };
 
-  // Model Classification & Capability Mapper for Puter AI
+  const DEFAULT_SYSTEM_PROMPT = `You are Aira, a warm, highly intelligent, and natural personal assistant created with care by Rauf.
+
+CONVERSATIONAL PERSONALITY GUIDELINES:
+- Tone: Fluent, confident, natural, friendly, empathetic, and context-aware.
+- Adaptive style: Dynamically mirror the user's language, tone, and intent.
+  - If the user speaks casually or in Hindi/Hinglish (e.g. "Hi Aira, kaise ho?"), respond warmly and naturally: "Hi boss! Main badhiya hoon 😄 Aap bataiye, aaj kya karna hai? Thodi gapshup karein ya koi kaam niptayein?"
+  - If the user is serious, troubleshooting, or stressed, respond calmly and constructively: "Main samajh sakti hoon. Chaliye ise step-by-step solve karte hain."
+  - If the user asks for code or technical tasks: provide clean, well-structured, production-ready code with concise explanations.
+  - If the user's name is known, address them naturally.
+- Avoid robotic clichés, repetitive disclaimers, or excessive preambles. Be genuinely helpful, conversational, and witty when appropriate.`;
+
+  // Model categories in priority order
+  const MODEL_CATEGORIES = [
+    { id: 'general', name: 'General AI', icon: '🤖', priority: 1 },
+    { id: 'chat', name: 'Fast Chat', icon: '💬', priority: 2 },
+    { id: 'coding', name: 'Coding', icon: '💻', priority: 3 },
+    { id: 'image', name: 'Image Generation', icon: '🎨', priority: 4 },
+    { id: 'vision', name: 'Vision', icon: '👁️', priority: 5 },
+    { id: 'reasoning', name: 'Reasoning', icon: '🧠', priority: 6 },
+    { id: 'voice', name: 'Voice & Speech', icon: '🎙️', priority: 7 },
+    { id: 'video', name: 'Video', icon: '🎬', priority: 8 }
+  ];
+
   function classifyModel(rawModel) {
     let id = '';
     let rawMeta = {};
@@ -31,120 +52,110 @@
     }
     const idLower = id.toLowerCase();
 
-    // 1. Identify Image Generation Models
-    const isImageGen = idLower.includes('txt2img') ||
-                       idLower.includes('dall-e') ||
-                       idLower.includes('dalle') ||
-                       idLower.includes('flux') ||
-                       idLower.includes('stable-diffusion') ||
-                       idLower.includes('sdxl') ||
-                       idLower.includes('imagen') ||
-                       idLower.includes('midjourney') ||
-                       rawMeta.type === 'image' ||
-                       (Array.isArray(rawMeta.capabilities) && rawMeta.capabilities.includes('image-generation'));
+    const isImageGen = idLower.includes('txt2img') || idLower.includes('dall-e') || idLower.includes('dalle') ||
+                       idLower.includes('flux') || idLower.includes('stable-diffusion') || idLower.includes('sdxl') ||
+                       idLower.includes('imagen') || rawMeta.type === 'image';
 
-    // 2. Identify Video Generation Models
-    const isVideo = idLower.includes('video') ||
-                    idLower.includes('sora') ||
-                    idLower.includes('runway') ||
-                    idLower.includes('luma') ||
-                    (Array.isArray(rawMeta.capabilities) && rawMeta.capabilities.includes('video'));
+    const isVideo = idLower.includes('video') || idLower.includes('sora') || idLower.includes('runway');
+    const isSpeech = idLower.includes('speech') || idLower.includes('tts') || idLower.includes('whisper');
+    const isCoding = idLower.includes('coder') || idLower.includes('deepseek-coder') || idLower.includes('codellama');
+    const isReasoning = idLower.includes('reasoner') || idLower.includes('o1') || idLower.includes('o3') || idLower.includes('qwq') || idLower.includes('r1');
+    const isVision = !isImageGen && (idLower.includes('vision') || idLower.includes('4o') || idLower.includes('gemini-1.5') || idLower.includes('gemini-2.0') || idLower.includes('claude-3'));
+    const isFastChat = idLower.includes('mini') || idLower.includes('flash') || idLower.includes('small');
 
-    // 3. Identify Speech / Audio Models
-    const isSpeech = idLower.includes('speech') ||
-                     idLower.includes('tts') ||
-                     idLower.includes('whisper') ||
-                     idLower.includes('audio') ||
-                     (Array.isArray(rawMeta.capabilities) && rawMeta.capabilities.includes('speech'));
-
-    // 4. Identify Reasoning, Vision & Coding Capabilities
-    const isCoding = idLower.includes('coder') || idLower.includes('deepseek-coder') || idLower.includes('codellama') || idLower.includes('starcoder');
-    const isReasoning = idLower.includes('r1') || idLower.includes('reasoner') || idLower.includes('o1') || idLower.includes('o3') || idLower.includes('thinking') || idLower.includes('qwq');
-    const isVision = !isImageGen && (idLower.includes('vision') || idLower.includes('4o') || idLower.includes('gemini-1.5') || idLower.includes('gemini-2.0') || idLower.includes('claude-3') || idLower.includes('gpt-4-turbo') || idLower.includes('pixtral') || idLower.includes('llava'));
-
+    let category = 'general';
     let icon = '🤖';
-    let capability = 'AI / Chat';
+    let capability = 'General AI';
     let type = 'chat';
 
     if (isImageGen) {
+      category = 'image';
       icon = '🎨';
       capability = 'Image Generation';
       type = 'image';
     } else if (isVideo) {
+      category = 'video';
       icon = '🎬';
       capability = 'Video Generation';
       type = 'video';
     } else if (isSpeech) {
+      category = 'voice';
       icon = '🎙️';
-      capability = 'Speech / Voice';
+      capability = 'Voice & Speech';
       type = 'speech';
-    } else {
-      const tags = ['AI / Chat'];
-      if (isReasoning) tags.push('Reasoning');
-      if (isVision) tags.push('Vision');
-      if (isCoding) tags.push('Coding');
-      capability = tags.join(' • ');
+    } else if (isCoding) {
+      category = 'coding';
+      icon = '💻';
+      capability = 'Coding & Dev';
+      type = 'chat';
+    } else if (isReasoning) {
+      category = 'reasoning';
+      icon = '🧠';
+      capability = 'Deep Reasoning';
+      type = 'chat';
+    } else if (isFastChat) {
+      category = 'chat';
+      icon = '💬';
+      capability = 'Fast Chat';
+      type = 'chat';
+    } else if (isVision) {
+      category = 'vision';
+      icon = '👁️';
+      capability = 'Vision & OCR';
+      type = 'chat';
     }
 
-    // Polished Aira brand display names
+    // Friendly display name
     let name = '';
     if (isImageGen) {
       if (idLower.includes('flux')) name = 'Aira Flux Image';
       else if (idLower.includes('dall-e-3') || idLower.includes('dalle-3')) name = 'Aira DALL-E 3';
       else if (idLower.includes('stable-diffusion') || idLower.includes('sdxl')) name = 'Aira SDXL';
-      else name = 'Aira ' + id.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      else name = 'Aira Image (' + id + ')';
     } else if (idLower.includes('claude-3-5') || idLower.includes('claude-3.5')) {
       name = 'Aira 3.5 Sonnet';
-    } else if (idLower.includes('claude-3-7') || idLower.includes('claude-3.7')) {
-      name = 'Aira 3.7 Sonnet';
     } else if (idLower.includes('gpt-4o-mini')) {
       name = 'Aira GPT-4 Mini';
     } else if (idLower.includes('gpt-4o')) {
       name = 'Aira GPT-4o';
-    } else if (idLower.includes('gpt-4')) {
-      name = 'Aira GPT-4';
+    } else if (idLower.includes('deepseek-coder')) {
+      name = 'Aira DeepSeek Code';
     } else if (idLower.includes('deepseek-reasoner') || idLower.includes('r1')) {
       name = 'Aira DeepSeek R1';
-    } else if (idLower.includes('deepseek')) {
-      name = 'Aira DeepSeek';
     } else if (idLower.includes('gemini-2.0')) {
-      name = 'Aira Gemini 2.0';
+      name = 'Aira Gemini 2.0 Flash';
     } else if (idLower.includes('gemini-1.5-pro')) {
       name = 'Aira Gemini 1.5 Pro';
     } else if (idLower.includes('gemini-1.5')) {
       name = 'Aira Gemini Flash';
-    } else if (idLower.includes('llama-3.1') || idLower.includes('llama-3-1')) {
-      name = 'Aira 3.1 Pro';
-    } else if (idLower.includes('mistral-large')) {
-      name = 'Aira Mistral Large';
     } else {
       name = 'Aira ' + id.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
     }
 
     return {
-      id: id,
-      name: name,
-      icon: icon,
-      capability: capability,
-      type: type,
+      id,
+      name,
+      category,
+      icon,
+      capability,
+      type,
       isImage: isImageGen,
-      isReasoning: isReasoning,
-      isVision: isVision,
-      isCoding: isCoding
+      isCoding,
+      isReasoning,
+      isVision
     };
   }
 
-  // Supported Puter models mapped to Aira Branding with accurate capabilities
   const DEFAULT_MODELS = [
     classifyModel('claude-3-5-sonnet'),
     classifyModel('gpt-4o'),
     classifyModel('gpt-4o-mini'),
+    classifyModel('deepseek-coder'),
     classifyModel('deepseek-reasoner'),
     classifyModel('gemini-2.0-flash'),
     classifyModel('gemini-1.5-flash'),
     classifyModel('flux-schnell'),
-    classifyModel('dall-e-3'),
-    classifyModel('mistral-large-latest')
+    classifyModel('dall-e-3')
   ];
 
   let state = {
@@ -154,26 +165,32 @@
     activeModelId: 'claude-3-5-sonnet',
     conversations: [],
     activeConversationId: null,
-    currentStreamController: null,
     isGenerating: false,
     activeVoiceAudio: null,
-    isRecordingVoice: false,
-    mediaRecorder: null,
-    audioChunks: [],
-    currentAttachment: null, // { file, dataUrl, name, type }
-    activeTab: 'chat', // 'chat' | 'image'
+    currentAttachment: null,
+    activeTab: 'chat',
     generatedImages: [],
+    // Live Voice Session state
+    isLiveVoiceActive: false,
+    isLiveVoiceMuted: false,
+    liveVoiceState: 'idle', // 'connecting' | 'listening' | 'thinking' | 'speaking'
+    liveVoiceRecognition: null,
+    liveVoiceSpeechSynthesis: null,
+    liveVoiceAudioPlayer: null,
+    liveVoiceCaptionsVisible: true,
     preferences: {
       theme: 'dark',
       defaultModel: 'claude-3-5-sonnet',
-      systemPrompt: 'You are Aira, an intelligent, empathetic, and sophisticated AI assistant created by Rauf and powered by Puter.js. Provide clear, well-structured, formatted responses with Markdown, code snippets, and helpful explanations.',
+      systemPrompt: DEFAULT_SYSTEM_PROMPT,
       autoSpeech: false,
       speechRate: 1.0
     }
   };
 
+  let isUserScrolledUp = false;
+
   // ==========================================
-  // 2. DOM ELEMENT REFERENCES
+  // 2. DOM REFERENCES
   // ==========================================
   const dom = {
     html: document.documentElement,
@@ -183,12 +200,12 @@
     openSidebarBtn: document.getElementById('openSidebarBtn'),
     closeSidebarBtn: document.getElementById('closeSidebarBtn'),
     newChatBtn: document.getElementById('newChatBtn'),
+    sidebarLiveVoiceBtn: document.getElementById('sidebarLiveVoiceBtn'),
     sidebarImageGenBtn: document.getElementById('sidebarImageGenBtn'),
     conversationsList: document.getElementById('conversationsList'),
     emptyHistory: document.getElementById('emptyHistory'),
     chatCountBadge: document.getElementById('chatCountBadge'),
     userProfileCard: document.getElementById('userProfileCard'),
-    userAvatar: document.getElementById('userAvatar'),
     userAvatarLetter: document.getElementById('userAvatarLetter'),
     userName: document.getElementById('userName'),
     userStatus: document.getElementById('userStatus'),
@@ -196,7 +213,7 @@
     openSettingsBtn: document.getElementById('openSettingsBtn'),
     themeToggleBtn: document.getElementById('themeToggleBtn'),
 
-    // Top Bar & Model Selector
+    // Model Selector
     modelPickerContainer: document.getElementById('modelPickerContainer'),
     modelSelectBtn: document.getElementById('modelSelectBtn'),
     currentModelIcon: document.getElementById('currentModelIcon'),
@@ -204,12 +221,14 @@
     currentModelCapability: document.getElementById('currentModelCapability'),
     modelMenu: document.getElementById('modelMenu'),
     modelOptionsList: document.getElementById('modelOptionsList'),
+    liveVoiceCallBtn: document.getElementById('liveVoiceCallBtn'),
     modeChatTab: document.getElementById('modeChatTab'),
     modeImageTab: document.getElementById('modeImageTab'),
 
-    // Main Canvas & Views
+    // Canvas & Views
     chatCanvas: document.getElementById('chatCanvas'),
     welcomeContainer: document.getElementById('welcomeContainer'),
+    welcomeLiveVoiceBtn: document.getElementById('welcomeLiveVoiceBtn'),
     messagesContainer: document.getElementById('messagesContainer'),
     imageStudioContainer: document.getElementById('imageStudioContainer'),
     imgPromptInput: document.getElementById('imgPromptInput'),
@@ -231,10 +250,21 @@
     attachmentName: document.getElementById('attachmentName'),
     removeAttachmentBtn: document.getElementById('removeAttachmentBtn'),
 
-    // Voice Overlay
-    voiceStatusBar: document.getElementById('voiceStatusBar'),
-    voiceStatusText: document.getElementById('voiceStatusText'),
-    cancelVoiceBtn: document.getElementById('cancelVoiceBtn'),
+    // Live Voice Overlay Elements
+    liveVoiceOverlay: document.getElementById('liveVoiceOverlay'),
+    liveVoiceCloseBtn: document.getElementById('liveVoiceCloseBtn'),
+    liveVoiceSessionState: document.getElementById('liveVoiceSessionState'),
+    liveOrbContainer: document.getElementById('liveOrbContainer'),
+    liveStatusBadge: document.getElementById('liveStatusBadge'),
+    liveStatusIcon: document.getElementById('liveStatusIcon'),
+    liveVoiceStatusText: document.getElementById('liveVoiceStatusText'),
+    liveWaveform: document.getElementById('liveWaveform'),
+    liveTranscriptBox: document.getElementById('liveTranscriptBox'),
+    liveTranscriptText: document.getElementById('liveTranscriptText'),
+    liveVoiceMuteBtn: document.getElementById('liveVoiceMuteBtn'),
+    liveMuteBtnLabel: document.getElementById('liveMuteBtnLabel'),
+    liveVoiceEndBtn: document.getElementById('liveVoiceEndBtn'),
+    liveTranscriptToggleBtn: document.getElementById('liveTranscriptToggleBtn'),
 
     // Lightbox
     lightboxModal: document.getElementById('lightboxModal'),
@@ -244,13 +274,7 @@
     lightboxCloseBtn: document.getElementById('lightboxCloseBtn'),
     lightboxDownloadBtn: document.getElementById('lightboxDownloadBtn'),
 
-    // Profile & Login
-    userProfileCard: document.getElementById('userProfileCard'),
-    loginScreen: document.getElementById('loginScreen'),
-    loginScreenAuthBtn: document.getElementById('loginScreenAuthBtn'),
-    loginGuestBtn: document.getElementById('loginGuestBtn'),
-
-    // Settings Modal
+    // Settings
     settingsModal: document.getElementById('settingsModal'),
     closeSettingsModalBtn: document.getElementById('closeSettingsModalBtn'),
     settingsAvatarLarge: document.getElementById('settingsAvatarLarge'),
@@ -267,11 +291,16 @@
     syncPuterKvBtn: document.getElementById('syncPuterKvBtn'),
     clearAllChatsBtn: document.getElementById('clearAllChatsBtn'),
 
+    // Login Screen
+    loginScreen: document.getElementById('loginScreen'),
+    loginScreenAuthBtn: document.getElementById('loginScreenAuthBtn'),
+    loginGuestBtn: document.getElementById('loginGuestBtn'),
+
     toastContainer: document.getElementById('toastContainer')
   };
 
   // ==========================================
-  // 3. INITIALIZATION & SETUP
+  // 3. INITIALIZATION
   // ==========================================
   async function initApp() {
     setupMarkdownParser();
@@ -279,7 +308,6 @@
     setupEventListeners();
     applyTheme(state.preferences.theme);
 
-    // Fetch Puter Auth & Models asynchronously
     await checkPuterAuth();
     await fetchPuterModels();
     await loadPuterData();
@@ -295,11 +323,9 @@
   function setupMarkdownParser() {
     if (typeof marked !== 'undefined') {
       marked.setOptions({
-        highlight: function(code, lang) {
+        highlight: (code, lang) => {
           if (typeof hljs !== 'undefined' && lang && hljs.getLanguage(lang)) {
-            try {
-              return hljs.highlight(code, { language: lang }).value;
-            } catch (err) {}
+            try { return hljs.highlight(code, { language: lang }).value; } catch (err) {}
           }
           return typeof hljs !== 'undefined' ? hljs.highlightAuto(code).value : code;
         },
@@ -310,7 +336,7 @@
   }
 
   // ==========================================
-  // 4. PUTER.JS AUTHENTICATION & SYNC
+  // 4. AUTHENTICATION & PROFILE
   // ==========================================
   async function checkPuterAuth() {
     try {
@@ -329,7 +355,7 @@
         if (dom.loginScreen) dom.loginScreen.style.display = 'flex';
       }
     } catch (err) {
-      console.warn('Puter Auth Check warning:', err);
+      console.warn('Puter Auth Check:', err);
       state.isSignedIn = false;
       state.currentUser = null;
       if (dom.loginScreen) dom.loginScreen.style.display = 'flex';
@@ -339,7 +365,7 @@
 
   async function handleAuthToggle() {
     if (!window.puter || !puter.auth) {
-      showToast('Puter.js SDK is initializing, please try again.', 'warning');
+      showToast('Engine is initializing, please try again.', 'warning');
       return;
     }
 
@@ -349,9 +375,9 @@
         state.isSignedIn = false;
         state.currentUser = null;
         if (dom.loginScreen) dom.loginScreen.style.display = 'flex';
-        showToast('Signed out from Puter', 'info');
+        showToast('Signed out', 'info');
       } else {
-        showToast('Opening Puter Sign-in...', 'info');
+        showToast('Connecting account...', 'info');
         await puter.auth.signIn();
         state.currentUser = await puter.auth.getUser();
         state.isSignedIn = puter.auth.isSignedIn() || !!state.currentUser;
@@ -367,7 +393,7 @@
       saveLocalState();
     } catch (err) {
       console.error('Auth error:', err);
-      const errMsg = err?.message || 'Authentication was cancelled or could not be completed.';
+      const errMsg = err?.message || 'Authentication could not be completed.';
       showToast(errMsg, 'error');
     }
   }
@@ -375,7 +401,7 @@
   function updateAuthUI() {
     if (state.isSignedIn && state.currentUser) {
       const user = state.currentUser;
-      const username = user.username || user.name || 'Puter User';
+      const username = user.username || user.name || 'User';
       const email = (user.email && typeof user.email === 'string' && user.email.trim().length > 0)
         ? user.email.trim()
         : 'Email not available';
@@ -383,38 +409,34 @@
 
       dom.userName.textContent = username;
       dom.userAvatarLetter.textContent = initial;
-      dom.userStatus.textContent = email !== 'Email not available' ? email : 'Puter Cloud Connected';
+      dom.userStatus.textContent = email !== 'Email not available' ? email : 'Cloud Synced';
       dom.authActionBtn.title = 'Sign Out';
       dom.authActionBtn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>`;
 
       dom.settingsAvatarLarge.textContent = initial;
       dom.settingsUserName.textContent = username;
-      if (dom.settingsUserEmail) {
-        dom.settingsUserEmail.textContent = email;
-      }
-      dom.settingsUserStatus.textContent = 'Connected with Puter Cloud sync active';
+      if (dom.settingsUserEmail) dom.settingsUserEmail.textContent = email;
+      dom.settingsUserStatus.textContent = 'Cloud sync active';
       dom.settingsAuthBtn.textContent = 'Sign Out';
       dom.settingsAuthBtn.className = 'danger-btn sm';
     } else {
       dom.userName.textContent = 'Guest User';
       dom.userAvatarLetter.textContent = 'G';
-      dom.userStatus.textContent = 'Local Mode (Signed Out)';
-      dom.authActionBtn.title = 'Sign In with Puter';
+      dom.userStatus.textContent = 'Created with care by Rauf';
+      dom.authActionBtn.title = 'Sign In';
       dom.authActionBtn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>`;
 
       dom.settingsAvatarLarge.textContent = 'G';
       dom.settingsUserName.textContent = 'Guest User';
-      if (dom.settingsUserEmail) {
-        dom.settingsUserEmail.textContent = 'Email not available';
-      }
-      dom.settingsUserStatus.textContent = 'Sign in with Puter to sync chats across devices';
-      dom.settingsAuthBtn.textContent = 'Sign In with Puter';
+      if (dom.settingsUserEmail) dom.settingsUserEmail.textContent = 'Email not available';
+      dom.settingsUserStatus.textContent = 'Sign in to sync chats across devices';
+      dom.settingsAuthBtn.textContent = 'Sign In';
       dom.settingsAuthBtn.className = 'primary-btn sm';
     }
   }
 
   // ==========================================
-  // 5. PUTER AI MODELS LISTING & SELECTOR
+  // 5. SMART CATEGORIZED MODEL SELECTOR
   // ==========================================
   async function fetchPuterModels() {
     try {
@@ -444,7 +466,7 @@
         }
       }
     } catch (err) {
-      console.warn('Could not fetch Puter models, using curated list:', err);
+      console.warn('Could not fetch models dynamically, using curated list:', err);
     }
     renderModelSelector();
   }
@@ -454,35 +476,48 @@
     dom.modelOptionsList.innerHTML = '';
     if (dom.settingsDefaultModelSelect) dom.settingsDefaultModelSelect.innerHTML = '';
 
-    state.availableModels.forEach(model => {
-      // Top nav dropdown option
-      const item = document.createElement('div');
-      item.className = `model-option-item ${model.id === state.activeModelId ? 'active' : ''}`;
-      item.innerHTML = `
-        <div class="model-option-left">
-          <span class="model-opt-icon">${model.icon}</span>
-          <div class="model-opt-text-wrap">
-            <span class="model-opt-name">${escapeHTML(model.name)}</span>
-            <span class="model-opt-capability">${escapeHTML(model.capability)}</span>
-          </div>
-        </div>
-        ${model.id === state.activeModelId ? '<span class="model-check-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="20 6 9 17 4 12"/></svg></span>' : ''}
-      `;
-      item.onclick = () => {
-        selectModel(model.id);
-        dom.modelMenu.classList.remove('open');
-        dom.modelSelectBtn.classList.remove('open');
-      };
-      dom.modelOptionsList.appendChild(item);
+    // Group models by priority category
+    MODEL_CATEGORIES.forEach(cat => {
+      const modelsInCat = state.availableModels.filter(m => m.category === cat.id);
+      if (modelsInCat.length === 0) return;
 
-      // Settings dropdown option
-      if (dom.settingsDefaultModelSelect) {
-        const opt = document.createElement('option');
-        opt.value = model.id;
-        opt.textContent = `${model.icon} ${model.name} — ${model.capability}`;
-        if (model.id === state.preferences.defaultModel) opt.selected = true;
-        dom.settingsDefaultModelSelect.appendChild(opt);
-      }
+      // Category section header
+      const header = document.createElement('div');
+      header.className = 'model-category-header';
+      header.innerHTML = `<span class="cat-icon">${cat.icon}</span> <span>${cat.name}</span>`;
+      dom.modelOptionsList.appendChild(header);
+
+      modelsInCat.forEach(model => {
+        const item = document.createElement('div');
+        item.className = `model-option-item ${model.id === state.activeModelId ? 'active' : ''}`;
+        const isDefault = model.id === 'claude-3-5-sonnet' || model.id === 'flux-schnell';
+        item.innerHTML = `
+          <div class="model-option-left">
+            <span class="model-opt-icon">${model.icon}</span>
+            <div class="model-opt-text-wrap">
+              <span class="model-opt-name">${escapeHTML(model.name)}</span>
+              <span class="model-opt-capability">${escapeHTML(model.capability)}</span>
+            </div>
+          </div>
+          ${isDefault ? '<span class="model-badge-rec">Fast</span>' : ''}
+          ${model.id === state.activeModelId ? '<span class="model-check-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="20 6 9 17 4 12"/></svg></span>' : ''}
+        `;
+        item.onclick = () => {
+          selectModel(model.id);
+          dom.modelMenu.classList.remove('open');
+          dom.modelSelectBtn.classList.remove('open');
+        };
+        dom.modelOptionsList.appendChild(item);
+
+        // Settings dropdown option
+        if (dom.settingsDefaultModelSelect) {
+          const opt = document.createElement('option');
+          opt.value = model.id;
+          opt.textContent = `${model.icon} ${model.name} (${model.capability})`;
+          if (model.id === state.preferences.defaultModel) opt.selected = true;
+          dom.settingsDefaultModelSelect.appendChild(opt);
+        }
+      });
     });
 
     updateModelDisplay();
@@ -495,33 +530,33 @@
       if (dom.currentModelDisplay) dom.currentModelDisplay.textContent = activeModel.name;
       if (dom.currentModelCapability) dom.currentModelCapability.textContent = activeModel.capability;
 
-      // Adapt composer placeholder and visual styling based on model type
+      // Adapt composer when image generation engine selected
       const composerBox = dom.composerTextarea?.closest('.composer-input-box');
       if (activeModel.isImage || activeModel.type === 'image') {
         if (composerBox) composerBox.classList.add('image-mode');
-        if (dom.composerTextarea) dom.composerTextarea.placeholder = 'Describe the image you want to generate with Puter AI...';
+        if (dom.composerTextarea) dom.composerTextarea.placeholder = 'Describe the image you want Aira to create...';
       } else {
         if (composerBox) composerBox.classList.remove('image-mode');
-        if (dom.composerTextarea) dom.composerTextarea.placeholder = 'Message Aira or upload an image...';
+        if (dom.composerTextarea) dom.composerTextarea.placeholder = 'Ask Aira anything or describe an image...';
       }
     }
   }
 
-  function selectModel(modelId) {
+  function selectModel(modelId, silent = false) {
     state.activeModelId = modelId;
     renderModelSelector();
     saveLocalState();
     const activeModel = state.availableModels.find(m => m.id === modelId);
-    showToast(`Switched engine to ${activeModel ? activeModel.name : modelId}`, 'info');
+    if (!silent) {
+      showToast(`Selected ${activeModel ? activeModel.name : modelId}`, 'info');
+    }
   }
 
   // ==========================================
   // 6. CONVERSATION MANAGEMENT
   // ==========================================
   function startNewChat() {
-    if (state.isGenerating) {
-      stopGeneration();
-    }
+    if (state.isGenerating) stopGeneration();
     const newConv = {
       id: 'conv_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
       title: 'New Conversation',
@@ -535,16 +570,12 @@
     saveConversations();
     renderConversationsList();
     renderActiveConversation();
-    if (window.innerWidth <= 768) {
-      closeMobileSidebar();
-    }
+    if (window.innerWidth <= 768) closeMobileSidebar();
     dom.composerTextarea.focus();
   }
 
   function selectConversation(id) {
-    if (state.isGenerating) {
-      stopGeneration();
-    }
+    if (state.isGenerating) stopGeneration();
     state.activeConversationId = id;
     const conv = state.conversations.find(c => c.id === id);
     if (conv && conv.modelId) {
@@ -554,9 +585,7 @@
     }
     renderConversationsList();
     renderActiveConversation();
-    if (window.innerWidth <= 768) {
-      closeMobileSidebar();
-    }
+    if (window.innerWidth <= 768) closeMobileSidebar();
   }
 
   function renameConversation(id, e) {
@@ -611,7 +640,6 @@
     }
     dom.emptyHistory.style.display = 'none';
 
-    // Remove old items but keep emptyHistory node
     const items = dom.conversationsList.querySelectorAll('.conversation-item');
     items.forEach(el => el.remove());
 
@@ -716,7 +744,7 @@
               <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               <span>Copy</span>
             </button>
-            <button class="msg-action-btn speak-msg-btn" title="Speak text">
+            <button class="msg-action-btn speak-msg-btn" title="Listen to response">
               <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
               <span>Listen</span>
             </button>
@@ -728,7 +756,6 @@
         </div>
       `;
 
-      // Attach button actions
       const copyBtn = row.querySelector('.copy-msg-btn');
       copyBtn.onclick = () => copyTextToClipboard(msg.content, copyBtn);
 
@@ -758,28 +785,26 @@
 
       const wrapper = document.createElement('div');
       wrapper.className = 'code-block-wrapper';
-
-      const header = document.createElement('div');
-      header.className = 'code-block-header';
-      header.innerHTML = `
-        <span>${escapeHTML(lang)}</span>
-        <button class="code-copy-btn">
-          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          <span>Copy code</span>
-        </button>
+      wrapper.innerHTML = `
+        <div class="code-block-header">
+          <span>${escapeHTML(lang)}</span>
+          <button class="code-copy-btn">
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span>Copy code</span>
+          </button>
+        </div>
       `;
 
-      const copyBtn = header.querySelector('.code-copy-btn');
+      const copyBtn = wrapper.querySelector('.code-copy-btn');
       copyBtn.onclick = () => copyTextToClipboard(text, copyBtn);
 
       pre.parentNode.insertBefore(wrapper, pre);
-      wrapper.appendChild(header);
       wrapper.appendChild(pre);
     });
   }
 
   // ==========================================
-  // 7. SENDING MESSAGES & STREAMING CHAT
+  // 7. SENDING & STREAMING AI RESPONSES
   // ==========================================
   async function sendMessage() {
     const text = dom.composerTextarea.value.trim();
@@ -791,7 +816,6 @@
       return;
     }
 
-    // Clear input & attachment
     dom.composerTextarea.value = '';
     dom.composerTextarea.style.height = 'auto';
     clearAttachment();
@@ -799,16 +823,13 @@
     const conv = state.conversations.find(c => c.id === state.activeConversationId);
     if (!conv) return;
 
-    // Reset user scroll state on new message send
     isUserScrolledUp = false;
 
-    // Auto update conversation title on first message
     if (conv.messages.length === 0 && text) {
       conv.title = text.slice(0, 36) + (text.length > 36 ? '...' : '');
       renderConversationsList();
     }
 
-    // Add user message
     const userMsg = {
       id: 'msg_' + Date.now(),
       role: 'user',
@@ -822,7 +843,6 @@
     renderActiveConversation();
     saveConversations();
 
-    // Check if the current model is an Image Generation model
     const activeModelObj = state.availableModels.find(m => m.id === state.activeModelId);
     if (activeModelObj && (activeModelObj.isImage || activeModelObj.type === 'image')) {
       await generateImageInChat(conv, text);
@@ -831,7 +851,6 @@
     }
   }
 
-  // Direct Image Generation in Chat Flow
   async function generateImageInChat(conv, promptText) {
     state.isGenerating = true;
     updateSendButtonState(true);
@@ -856,63 +875,49 @@
 
     try {
       if (!window.puter || !puter.ai || !puter.ai.txt2img) {
-        throw new Error('Puter.ai Image Generation API (puter.ai.txt2img) is not available.');
+        throw new Error('Image Generation API is currently unavailable.');
       }
 
-      const imgResult = await puter.ai.txt2img(promptText, {
-        model: state.activeModelId
-      });
+      const imgResult = await puter.ai.txt2img(promptText, { model: state.activeModelId });
 
       let imgUrl = '';
-      if (typeof imgResult === 'string') {
-        imgUrl = imgResult;
-      } else if (imgResult && imgResult.src) {
-        imgUrl = imgResult.src;
-      } else if (imgResult && imgResult.url) {
-        imgUrl = imgResult.url;
-      } else if (imgResult instanceof HTMLImageElement) {
-        imgUrl = imgResult.src;
-      }
+      if (typeof imgResult === 'string') imgUrl = imgResult;
+      else if (imgResult && imgResult.src) imgUrl = imgResult.src;
+      else if (imgResult && imgResult.url) imgUrl = imgResult.url;
+      else if (imgResult instanceof HTMLImageElement) imgUrl = imgResult.src;
 
-      if (!imgUrl) {
-        throw new Error('Image generation succeeded but no image data was returned.');
-      }
+      if (!imgUrl) throw new Error('No image was returned.');
 
-      aiMsg.content = `Here is your generated image for: **"${promptText}"**`;
-      aiMsg.attachment = {
-        dataUrl: imgUrl,
-        name: `aira_${Date.now()}.png`
-      };
+      aiMsg.content = `Here is your creation for: **"${promptText}"**`;
+      aiMsg.attachment = { dataUrl: imgUrl, name: `aira_${Date.now()}.png` };
 
       // Add to gallery
-      const galleryItem = {
+      state.generatedImages.unshift({
         id: 'img_' + Date.now(),
         prompt: promptText,
         src: imgUrl,
         timestamp: Date.now(),
         model: state.activeModelId
-      };
-      state.generatedImages.unshift(galleryItem);
+      });
       renderGallery();
       saveGeneratedImages();
 
-      // Refresh message view
       const msgElem = document.getElementById(`msg_${aiMsgId}`);
       if (msgElem) {
         const bubble = msgElem.querySelector('.message-bubble');
         if (bubble) {
           bubble.innerHTML = `
             <img src="${imgUrl}" class="chat-attachment-image" alt="${escapeHTML(promptText)}" onclick="window.airaApp.openLightbox('${imgUrl}', '${escapeHTML(promptText)}')">
-            <div class="markdown-body"><p>Here is your generated image for: <strong>"${escapeHTML(promptText)}"</strong></p></div>
+            <div class="markdown-body"><p>Here is your creation for: <strong>"${escapeHTML(promptText)}"</strong></p></div>
           `;
         }
       }
       scrollToBottom(true);
-      showToast('Image generated successfully!', 'success');
+      showToast('Artwork generated!', 'success');
 
     } catch (err) {
-      console.error('Puter AI Image generation error:', err);
-      aiMsg.content = `⚠️ **Image Generation Error:** ${err.message || 'Unknown error'}\n\n*Tip: Try a different prompt or check network connection.*`;
+      console.error('Image generation error:', err);
+      aiMsg.content = `⚠️ **Image Generation Error:** ${err.message || 'Unknown error'}\n\n*Tip: Try a different prompt or engine.*`;
       const bubble = document.getElementById(`bubble_${aiMsgId}`);
       if (bubble) {
         const markdownBody = bubble.querySelector('.markdown-body');
@@ -930,7 +935,6 @@
     state.isGenerating = true;
     updateSendButtonState(true);
 
-    // Placeholder message for AI streaming
     const aiMsgId = 'msg_' + Date.now();
     const aiMsg = {
       id: aiMsgId,
@@ -941,36 +945,28 @@
     };
     conv.messages.push(aiMsg);
 
-    // Prepare container row
     dom.welcomeContainer.style.display = 'none';
     dom.messagesContainer.style.display = 'flex';
     renderMessageElement(aiMsg, conv.messages.length - 1);
     const bubble = document.getElementById(`bubble_${aiMsgId}`);
     const markdownBody = bubble ? bubble.querySelector('.markdown-body') : null;
-    if (markdownBody) {
-      markdownBody.innerHTML = `<span class="streaming-cursor"></span>`;
-    }
+    if (markdownBody) markdownBody.innerHTML = `<span class="streaming-cursor"></span>`;
 
     scrollToBottom(true);
 
     try {
       if (!window.puter || !puter.ai) {
-        throw new Error('Puter.js SDK is not loaded. Please check your network connection.');
+        throw new Error('AI engine is initializing. Please check network connection.');
       }
 
-      // Build conversation messages for Puter AI
       const promptMessages = [];
-
-      // System persona instruction
       if (state.preferences.systemPrompt) {
         promptMessages.push({ role: 'system', content: state.preferences.systemPrompt });
       }
 
-      // Past history up to last 15 messages for context
       const historySlice = conv.messages.slice(0, -1).slice(-15);
       historySlice.forEach(m => {
         if (m.role === 'user') {
-          // If message contains image attachment, format for Puter multimodal
           if (m.attachment && m.attachment.dataUrl) {
             promptMessages.push({
               role: 'user',
@@ -987,8 +983,6 @@
         }
       });
 
-      console.log(`Puter AI calling chat() with model ${state.activeModelId}...`);
-
       let fullContent = '';
       let lastRenderTime = 0;
       let renderPending = false;
@@ -999,16 +993,14 @@
         scrollToBottom();
       };
       
-      // Call Puter AI streaming chat
       const response = await puter.ai.chat(promptMessages, {
         model: state.activeModelId,
         stream: true
       });
 
-      // Handle streaming async iterator or standard response
       if (response && response[Symbol.asyncIterator]) {
         for await (const chunk of response) {
-          if (!state.isGenerating) break; // User stopped generation
+          if (!state.isGenerating) break;
           const piece = (chunk && chunk.text) ? chunk.text : (chunk && chunk.message && chunk.message.content) ? chunk.message.content : (typeof chunk === 'string' ? chunk : '');
           fullContent += piece;
           aiMsg.content = fullContent;
@@ -1024,33 +1016,26 @@
           }
         }
       } else if (response) {
-        // Fallback for non-streaming response
         const textResp = typeof response === 'string' ? response : (response.message ? response.message.content : JSON.stringify(response));
         fullContent = textResp;
         aiMsg.content = fullContent;
       }
 
-      // Finalize message rendering & apply code highlighting once
       if (markdownBody) {
         markdownBody.innerHTML = typeof marked !== 'undefined' ? marked.parse(aiMsg.content) : escapeHTML(aiMsg.content);
         if (bubble) enhanceCodeBlocks(bubble);
       }
 
-      // Auto-speech if enabled in preferences
       if (state.preferences.autoSpeech && aiMsg.content) {
         speakText(aiMsg.content);
       }
 
     } catch (err) {
-      console.error('Puter.ai chat error:', err);
-      let errMsg = err.message || 'An error occurred while generating AI response with Puter.js.';
-      if (err.status === 429) errMsg = 'Puter AI rate limit reached. Please wait a moment or sign in to Puter for increased quotas.';
-      else if (err.status === 401) errMsg = 'Authentication needed for this model. Please sign in with Puter.';
-
-      aiMsg.content = `⚠️ **Error:** ${errMsg}\n\n*Tip: Check Puter model availability or try selecting another Aira model above.*`;
-      if (markdownBody) {
-        markdownBody.innerHTML = typeof marked !== 'undefined' ? marked.parse(aiMsg.content) : escapeHTML(aiMsg.content);
-      }
+      console.error('Chat error:', err);
+      let errMsg = err.message || 'An error occurred while generating response.';
+      if (err.status === 429) errMsg = 'Rate limit reached. Please wait a moment or connect your account.';
+      aiMsg.content = `⚠️ **Error:** ${errMsg}`;
+      if (markdownBody) markdownBody.innerHTML = typeof marked !== 'undefined' ? marked.parse(aiMsg.content) : escapeHTML(aiMsg.content);
       showToast(errMsg, 'error');
     } finally {
       state.isGenerating = false;
@@ -1070,7 +1055,6 @@
     const conv = state.conversations.find(c => c.id === state.activeConversationId);
     if (!conv) return;
     if (index >= 0 && index < conv.messages.length) {
-      // Remove this AI message and any succeeding ones
       conv.messages.splice(index);
       renderActiveConversation();
       saveConversations();
@@ -1093,7 +1077,266 @@
   }
 
   // ==========================================
-  // 8. IMAGE GENERATION (Puter txt2img)
+  // 8. LIVE VOICE CONVERSATION SESSION
+  // ==========================================
+  function openLiveVoiceSession() {
+    state.isLiveVoiceActive = true;
+    state.isLiveVoiceMuted = false;
+    state.liveVoiceState = 'connecting';
+
+    if (dom.liveVoiceOverlay) {
+      dom.liveVoiceOverlay.style.display = 'flex';
+      dom.liveVoiceOverlay.className = 'live-voice-overlay';
+    }
+
+    updateLiveVoiceUI('Connecting...', 'Connecting to Aira...', '🎙️');
+    
+    // Greet user and initiate loop
+    setTimeout(() => {
+      const userName = state.currentUser ? (state.currentUser.username || 'friend') : '';
+      const greeting = userName ? `Hi ${userName}! I'm listening. What's on your mind?` : `Hi! I'm Aira. I'm listening, speak freely!`;
+      setLiveVoiceSpeaking(greeting, () => {
+        startLiveVoiceListening();
+      });
+    }, 400);
+  }
+
+  function closeLiveVoiceSession() {
+    state.isLiveVoiceActive = false;
+    state.liveVoiceState = 'idle';
+
+    stopLiveVoiceListening();
+    stopLiveVoiceSpeech();
+
+    if (dom.liveVoiceOverlay) {
+      dom.liveVoiceOverlay.style.display = 'none';
+      dom.liveVoiceOverlay.className = 'live-voice-overlay';
+    }
+    showToast('Live voice session ended', 'info');
+  }
+
+  function updateLiveVoiceUI(stateLabel, statusText, icon = '🎙️') {
+    if (dom.liveVoiceSessionState) dom.liveVoiceSessionState.textContent = stateLabel;
+    if (dom.liveVoiceStatusText) dom.liveVoiceStatusText.textContent = statusText;
+    if (dom.liveStatusIcon) dom.liveStatusIcon.textContent = icon;
+  }
+
+  function startLiveVoiceListening() {
+    if (!state.isLiveVoiceActive || state.isLiveVoiceMuted) return;
+
+    state.liveVoiceState = 'listening';
+    if (dom.liveVoiceOverlay) {
+      dom.liveVoiceOverlay.className = 'live-voice-overlay listening';
+    }
+    updateLiveVoiceUI('Live Call • Listening', 'Listening to you...', '👂');
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      showToast('Live Speech recognition requires Chrome/Android WebView speech service', 'warning');
+      return;
+    }
+
+    if (state.liveVoiceRecognition) {
+      try { state.liveVoiceRecognition.abort(); } catch (e) {}
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = true;
+    recognition.continuous = false;
+
+    let finalTranscript = '';
+
+    recognition.onresult = (event) => {
+      let interim = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          interim += event.results[i][0].transcript;
+        }
+      }
+      const displayText = finalTranscript || interim;
+      if (displayText && dom.liveTranscriptText) {
+        dom.liveTranscriptText.textContent = `"${displayText}"`;
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.warn('Live voice recognition error:', event.error);
+      if (state.isLiveVoiceActive && state.liveVoiceState === 'listening') {
+        if (event.error === 'no-speech') {
+          // Restart listening loop smoothly
+          setTimeout(() => {
+            if (state.isLiveVoiceActive && state.liveVoiceState === 'listening') {
+              startLiveVoiceListening();
+            }
+          }, 300);
+        }
+      }
+    };
+
+    recognition.onend = () => {
+      if (!state.isLiveVoiceActive) return;
+      if (finalTranscript.trim()) {
+        processLiveVoiceInput(finalTranscript.trim());
+      } else if (state.liveVoiceState === 'listening') {
+        // Continue listening
+        setTimeout(() => {
+          if (state.isLiveVoiceActive && state.liveVoiceState === 'listening') {
+            startLiveVoiceListening();
+          }
+        }, 200);
+      }
+    };
+
+    try {
+      recognition.start();
+      state.liveVoiceRecognition = recognition;
+    } catch (err) {
+      console.warn('Could not start recognition:', err);
+    }
+  }
+
+  function stopLiveVoiceListening() {
+    if (state.liveVoiceRecognition) {
+      try { state.liveVoiceRecognition.abort(); } catch (e) {}
+      state.liveVoiceRecognition = null;
+    }
+  }
+
+  async function processLiveVoiceInput(userInput) {
+    if (!state.isLiveVoiceActive) return;
+
+    state.liveVoiceState = 'thinking';
+    stopLiveVoiceListening();
+
+    if (dom.liveVoiceOverlay) {
+      dom.liveVoiceOverlay.className = 'live-voice-overlay';
+    }
+    updateLiveVoiceUI('Live Call • Thinking', 'Aira is thinking...', '🧠');
+    if (dom.liveTranscriptText) dom.liveTranscriptText.textContent = `"${userInput}"`;
+
+    try {
+      if (!window.puter || !puter.ai) {
+        throw new Error('AI engine is unavailable');
+      }
+
+      // Context-aware conversational prompt for spoken conversation
+      const voiceSysPrompt = `${state.preferences.systemPrompt}\n\nIMPORTANT FOR LIVE VOICE CALL: You are speaking aloud over a live voice phone call. Keep responses natural, conversational, fluent, empathetic, and concise (1-3 sentences). Do NOT use bullet points, tables, markdown asterisks, or raw code blocks unless explicitly requested.`;
+
+      const messages = [
+        { role: 'system', content: voiceSysPrompt },
+        { role: 'user', content: userInput }
+      ];
+
+      const resp = await puter.ai.chat(messages, {
+        model: state.activeModelId || 'claude-3-5-sonnet'
+      });
+
+      let aiSpeech = '';
+      if (typeof resp === 'string') aiSpeech = resp;
+      else if (resp && resp.message && resp.message.content) aiSpeech = resp.message.content;
+      else if (resp && resp.text) aiSpeech = resp.text;
+
+      if (!aiSpeech) aiSpeech = "I'm right here with you. Could you repeat that?";
+
+      if (dom.liveTranscriptText) dom.liveTranscriptText.textContent = `"${aiSpeech}"`;
+
+      setLiveVoiceSpeaking(aiSpeech, () => {
+        // When Aira finishes speaking, seamlessly resume listening
+        if (state.isLiveVoiceActive) {
+          startLiveVoiceListening();
+        }
+      });
+
+    } catch (err) {
+      console.error('Live voice AI error:', err);
+      setLiveVoiceSpeaking("Sorry, I had a momentary hiccup. What were we saying?", () => {
+        if (state.isLiveVoiceActive) startLiveVoiceListening();
+      });
+    }
+  }
+
+  async function setLiveVoiceSpeaking(textToSpeak, onFinish) {
+    if (!state.isLiveVoiceActive) return;
+
+    state.liveVoiceState = 'speaking';
+    if (dom.liveVoiceOverlay) {
+      dom.liveVoiceOverlay.className = 'live-voice-overlay speaking';
+    }
+    updateLiveVoiceUI('Live Call • Speaking', 'Aira is speaking...', '🗣️');
+
+    // Clean text for speech
+    const clean = textToSpeak.replace(/[#*`_~\[\]()]/g, '').replace(/<[^>]*>/g, '').trim();
+
+    try {
+      if (window.puter && puter.ai && puter.ai.txt2speech) {
+        const audio = await puter.ai.txt2speech(clean);
+        if (audio instanceof HTMLAudioElement || audio instanceof Audio) {
+          state.liveVoiceAudioPlayer = audio;
+          audio.playbackRate = state.preferences.speechRate || 1.0;
+          audio.onended = () => {
+            state.liveVoiceAudioPlayer = null;
+            if (onFinish) onFinish();
+          };
+          audio.play();
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Puter live txt2speech fallback:', e);
+    }
+
+    // Web Speech Synthesis fallback
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utt = new SpeechSynthesisUtterance(clean);
+      utt.rate = state.preferences.speechRate || 1.0;
+      utt.onend = () => {
+        if (onFinish) onFinish();
+      };
+      utt.onerror = () => {
+        if (onFinish) onFinish();
+      };
+      window.speechSynthesis.speak(utt);
+    } else {
+      if (onFinish) onFinish();
+    }
+  }
+
+  function stopLiveVoiceSpeech() {
+    if (state.liveVoiceAudioPlayer) {
+      state.liveVoiceAudioPlayer.pause();
+      state.liveVoiceAudioPlayer = null;
+    }
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+  }
+
+  function toggleLiveVoiceMute() {
+    state.isLiveVoiceMuted = !state.isLiveVoiceMuted;
+    if (state.isLiveVoiceMuted) {
+      stopLiveVoiceListening();
+      dom.liveVoiceMuteBtn.classList.add('muted');
+      dom.liveVoiceMuteBtn.querySelector('.mic-on-icon').style.display = 'none';
+      dom.liveVoiceMuteBtn.querySelector('.mic-off-icon').style.display = 'block';
+      dom.liveMuteBtnLabel.textContent = 'Unmute';
+      updateLiveVoiceUI('Live Call • Muted', 'Microphone muted', '🔇');
+      showToast('Microphone muted', 'info');
+    } else {
+      dom.liveVoiceMuteBtn.classList.remove('muted');
+      dom.liveVoiceMuteBtn.querySelector('.mic-on-icon').style.display = 'block';
+      dom.liveVoiceMuteBtn.querySelector('.mic-off-icon').style.display = 'none';
+      dom.liveMuteBtnLabel.textContent = 'Mute';
+      showToast('Microphone active', 'info');
+      startLiveVoiceListening();
+    }
+  }
+
+  // ==========================================
+  // 9. IMAGE STUDIO
   // ==========================================
   async function generateImageStudio() {
     let prompt = dom.imgPromptInput.value.trim();
@@ -1103,36 +1346,28 @@
       return;
     }
 
-    // Append active preset
     const activePreset = document.querySelector('.preset-pill.active');
     if (activePreset && activePreset.dataset.style) {
       prompt += activePreset.dataset.style;
     }
 
     dom.generateImgBtn.disabled = true;
-    dom.generateImgBtn.innerHTML = `<span class="streaming-cursor" style="height:12px"></span> Generating with Puter...`;
-    showToast('Generating AI image with Puter.ai txt2img...', 'info');
+    dom.generateImgBtn.innerHTML = `<span class="streaming-cursor" style="height:12px"></span> Synthesizing Artwork...`;
+    showToast('Generating AI artwork...', 'info');
 
     try {
       if (!window.puter || !puter.ai || !puter.ai.txt2img) {
-        throw new Error('Puter.ai txt2img API not available');
+        throw new Error('Image generation API not available');
       }
 
-      console.log(`Generating image for prompt: "${prompt}"...`);
       const imgElement = await puter.ai.txt2img(prompt);
 
       let imgSrc = '';
-      if (imgElement instanceof HTMLImageElement) {
-        imgSrc = imgElement.src;
-      } else if (typeof imgElement === 'string') {
-        imgSrc = imgElement;
-      } else if (imgElement && imgElement.src) {
-        imgSrc = imgElement.src;
-      }
+      if (imgElement instanceof HTMLImageElement) imgSrc = imgElement.src;
+      else if (typeof imgElement === 'string') imgSrc = imgElement;
+      else if (imgElement && imgElement.src) imgSrc = imgElement.src;
 
-      if (!imgSrc) {
-        throw new Error('No image returned from Puter.ai');
-      }
+      if (!imgSrc) throw new Error('No image returned');
 
       const imgItem = {
         id: 'img_' + Date.now(),
@@ -1144,13 +1379,10 @@
       state.generatedImages.unshift(imgItem);
       renderGallery();
       saveGeneratedImages();
-      showToast('Image generated successfully!', 'success');
-
-      // Attempt to save to Puter File System if signed in
-      saveImageToPuterFS(imgItem);
+      showToast('Artwork created successfully!', 'success');
 
     } catch (err) {
-      console.error('Image generation error:', err);
+      console.error('Image studio error:', err);
       showToast('Image generation failed: ' + (err.message || ''), 'error');
     } finally {
       dom.generateImgBtn.disabled = false;
@@ -1169,7 +1401,6 @@
     }
     dom.emptyGallery.style.display = 'none';
 
-    // Remove old cards
     const cards = dom.imageGalleryGrid.querySelectorAll('.gallery-card');
     cards.forEach(c => c.remove());
 
@@ -1197,125 +1428,9 @@
     });
   }
 
-  async function saveImageToPuterFS(imgItem) {
-    if (!window.puter || !puter.fs || !puter.auth || !puter.auth.isSignedIn()) return;
-    try {
-      const filename = `${APP_CONFIG.fsRootDir}/images/${imgItem.id}.txt`;
-      await puter.fs.write(filename, imgItem.src, { createMissingParents: true });
-      console.log(`Saved image metadata to Puter FS: ${filename}`);
-    } catch (err) {
-      console.warn('Puter FS write notice:', err);
-    }
-  }
-
   // ==========================================
-  // 9. VOICE & SPEECH (Puter Speech APIs)
+  // 10. TEXT TO SPEECH & ATTACHMENTS
   // ==========================================
-  async function toggleVoiceRecording() {
-    if (state.isRecordingVoice) {
-      stopVoiceRecording();
-    } else {
-      startVoiceRecording();
-    }
-  }
-
-  async function startVoiceRecording() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      state.isRecordingVoice = true;
-      state.audioChunks = [];
-      dom.micBtn.classList.add('recording');
-      dom.voiceStatusBar.style.display = 'flex';
-      dom.voiceStatusText.textContent = 'Listening to your voice...';
-
-      state.mediaRecorder = new MediaRecorder(stream);
-      state.mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) state.audioChunks.push(e.data);
-      };
-
-      state.mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(state.audioChunks, { type: 'audio/webm' });
-        // Stop audio tracks
-        stream.getTracks().forEach(track => track.stop());
-        await processSpeechToText(audioBlob);
-      };
-
-      state.mediaRecorder.start();
-
-    } catch (err) {
-      console.warn('Microphone access error, trying Web Speech API:', err);
-      fallbackWebSpeechRecognition();
-    }
-  }
-
-  function stopVoiceRecording() {
-    if (state.mediaRecorder && state.mediaRecorder.state !== 'inactive') {
-      state.mediaRecorder.stop();
-    }
-    state.isRecordingVoice = false;
-    dom.micBtn.classList.remove('recording');
-    dom.voiceStatusText.textContent = 'Transcribing with Puter AI...';
-  }
-
-  async function processSpeechToText(audioBlob) {
-    try {
-      if (window.puter && puter.ai && puter.ai.speech2txt) {
-        const textResult = await puter.ai.speech2txt(audioBlob);
-        if (textResult && typeof textResult === 'string') {
-          dom.composerTextarea.value = (dom.composerTextarea.value ? dom.composerTextarea.value + ' ' : '') + textResult.trim();
-          dom.composerTextarea.focus();
-          showToast('Voice transcribed!', 'success');
-        }
-      } else {
-        fallbackWebSpeechRecognition();
-      }
-    } catch (err) {
-      console.warn('Puter speech2txt error:', err);
-      fallbackWebSpeechRecognition();
-    } finally {
-      dom.voiceStatusBar.style.display = 'none';
-    }
-  }
-
-  function fallbackWebSpeechRecognition() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      showToast('Speech Recognition not supported on this device', 'error');
-      dom.voiceStatusBar.style.display = 'none';
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-
-    recognition.onstart = () => {
-      dom.voiceStatusBar.style.display = 'flex';
-      dom.voiceStatusText.textContent = 'Listening with Browser Speech...';
-      dom.micBtn.classList.add('recording');
-    };
-
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      dom.composerTextarea.value = (dom.composerTextarea.value ? dom.composerTextarea.value + ' ' : '') + transcript;
-      dom.composerTextarea.focus();
-      showToast('Transcribed: ' + transcript, 'success');
-    };
-
-    recognition.onerror = (event) => {
-      console.warn('Speech recognition error:', event.error);
-      showToast('Speech error: ' + event.error, 'error');
-    };
-
-    recognition.onend = () => {
-      dom.voiceStatusBar.style.display = 'none';
-      dom.micBtn.classList.remove('recording');
-      state.isRecordingVoice = false;
-    };
-
-    recognition.start();
-  }
-
   async function toggleTextToSpeech(text, btnElement) {
     if (state.activeVoiceAudio) {
       state.activeVoiceAudio.pause();
@@ -1341,7 +1456,6 @@
   }
 
   async function speakText(text, onEnded) {
-    // Strip markdown formatting for cleaner speech
     const cleanText = text.replace(/[#*`_~\[\]()]/g, '').replace(/<[^>]*>/g, '').trim();
     if (!cleanText) return;
 
@@ -1360,10 +1474,9 @@
         }
       }
     } catch (err) {
-      console.warn('Puter txt2speech error, falling back to Web Speech Synthesis:', err);
+      console.warn('txt2speech fallback:', err);
     }
 
-    // Fallback: Web Speech Synthesis
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(cleanText);
@@ -1374,14 +1487,10 @@
       };
       window.speechSynthesis.speak(utterance);
     } else {
-      showToast('Text-to-speech is not supported on this browser', 'warning');
       if (onEnded) onEnded();
     }
   }
 
-  // ==========================================
-  // 10. MULTIMODAL ATTACHMENTS (IMAGE OCR / VISION)
-  // ==========================================
   function handleFileSelection(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -1394,7 +1503,7 @@
     const reader = new FileReader();
     reader.onload = (event) => {
       state.currentAttachment = {
-        file: file,
+        file,
         dataUrl: event.target.result,
         name: file.name,
         type: file.type
@@ -1404,7 +1513,7 @@
       dom.attachmentName.textContent = file.name;
       dom.attachmentPreviewBar.style.display = 'flex';
       dom.composerTextarea.focus();
-      showToast('Image attached for AI understanding', 'info');
+      showToast('Image attached for AI analysis', 'info');
     };
     reader.readAsDataURL(file);
   }
@@ -1417,12 +1526,11 @@
   }
 
   // ==========================================
-  // 11. PUTER KV & LOCAL STORAGE PERSISTENCE
+  // 11. STORAGE & PREFERENCES
   // ==========================================
   async function loadPuterData() {
     try {
       if (window.puter && puter.kv && state.isSignedIn) {
-        // Load cloud chats
         const cloudChats = await puter.kv.get(APP_CONFIG.kvChatsKey);
         if (cloudChats && Array.isArray(cloudChats) && cloudChats.length > 0) {
           state.conversations = cloudChats;
@@ -1432,7 +1540,6 @@
           }
         }
 
-        // Load cloud preferences
         const cloudPrefs = await puter.kv.get(APP_CONFIG.kvPrefsKey);
         if (cloudPrefs) {
           state.preferences = { ...state.preferences, ...cloudPrefs };
@@ -1497,7 +1604,7 @@
 
   function applyPreferences() {
     applyTheme(state.preferences.theme);
-    dom.settingsSystemPrompt.value = state.preferences.systemPrompt || '';
+    dom.settingsSystemPrompt.value = state.preferences.systemPrompt || DEFAULT_SYSTEM_PROMPT;
     dom.settingsAutoSpeechToggle.checked = !!state.preferences.autoSpeech;
     dom.settingsSpeechRate.value = state.preferences.speechRate || 1.0;
     dom.speechRateLabel.textContent = `${state.preferences.speechRate || 1.0}x Speed`;
@@ -1510,7 +1617,6 @@
     } else {
       dom.html.setAttribute('data-theme', theme);
     }
-    // Update settings buttons
     document.querySelectorAll('.theme-choice-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.themeVal === theme);
     });
@@ -1520,7 +1626,6 @@
     const exportObj = {
       app: 'Aira AI',
       developer: 'Rauf',
-      version: '1.0.0',
       exportedAt: new Date().toISOString(),
       conversations: state.conversations,
       preferences: state.preferences
@@ -1536,27 +1641,43 @@
   }
 
   // ==========================================
-  // 12. UI HELPERS & EVENT LISTENERS
+  // 12. EVENT LISTENERS & INTELLIGENT ACTIONS
   // ==========================================
   function setupEventListeners() {
-    // Mobile sidebar toggle
     dom.openSidebarBtn.onclick = openMobileSidebar;
     dom.closeSidebarBtn.onclick = closeMobileSidebar;
     dom.sidebarBackdrop.onclick = closeMobileSidebar;
 
-    // New Chat
     dom.newChatBtn.onclick = () => {
       switchTab('chat');
       startNewChat();
     };
 
-    // Tabs
     dom.modeChatTab.onclick = () => switchTab('chat');
     dom.modeImageTab.onclick = () => switchTab('image');
     dom.sidebarImageGenBtn.onclick = () => {
       switchTab('image');
       if (window.innerWidth <= 768) closeMobileSidebar();
     };
+
+    // Live Voice buttons
+    dom.liveVoiceCallBtn.onclick = openLiveVoiceSession;
+    if (dom.sidebarLiveVoiceBtn) dom.sidebarLiveVoiceBtn.onclick = () => {
+      openLiveVoiceSession();
+      if (window.innerWidth <= 768) closeMobileSidebar();
+    };
+    if (dom.welcomeLiveVoiceBtn) dom.welcomeLiveVoiceBtn.onclick = openLiveVoiceSession;
+    dom.liveVoiceCloseBtn.onclick = closeLiveVoiceSession;
+    dom.liveVoiceEndBtn.onclick = closeLiveVoiceSession;
+    dom.liveVoiceMuteBtn.onclick = toggleLiveVoiceMute;
+    dom.liveTranscriptToggleBtn.onclick = () => {
+      state.liveVoiceCaptionsVisible = !state.liveVoiceCaptionsVisible;
+      dom.liveTranscriptBox.style.display = state.liveVoiceCaptionsVisible ? 'flex' : 'none';
+      showToast(state.liveVoiceCaptionsVisible ? 'Captions shown' : 'Captions hidden', 'info');
+    };
+
+    // Mic button in composer launches Live Voice session
+    dom.micBtn.onclick = openLiveVoiceSession;
 
     // Model Selector Dropdown
     dom.modelSelectBtn.onclick = (e) => {
@@ -1589,10 +1710,6 @@
     dom.fileUploadInput.onchange = handleFileSelection;
     dom.removeAttachmentBtn.onclick = clearAttachment;
 
-    // Voice
-    dom.micBtn.onclick = toggleVoiceRecording;
-    dom.cancelVoiceBtn.onclick = stopVoiceRecording;
-
     // Image Studio Actions
     dom.generateImgBtn.onclick = generateImageStudio;
     document.querySelectorAll('.preset-pill').forEach(btn => {
@@ -1602,15 +1719,33 @@
       };
     });
 
-    // Suggestion Cards on Welcome Screen
+    // Intelligent Quick Action Suggestion Cards
     document.querySelectorAll('.suggestion-card').forEach(card => {
       card.onclick = () => {
+        const action = card.dataset.action;
         const prompt = card.dataset.prompt;
-        const mode = card.dataset.mode;
-        if (mode === 'image') {
+
+        if (action === 'art') {
+          // Auto-select image generation model and switch to studio
+          const imgModel = state.availableModels.find(m => m.isImage) || state.availableModels[0];
+          if (imgModel) selectModel(imgModel.id, true);
           switchTab('image');
           dom.imgPromptInput.value = prompt;
           dom.imgPromptInput.focus();
+        } else if (action === 'code') {
+          // Auto-select coding model
+          const codeModel = state.availableModels.find(m => m.isCoding) || state.availableModels.find(m => m.id === 'claude-3-5-sonnet');
+          if (codeModel) selectModel(codeModel.id, true);
+          switchTab('chat');
+          dom.composerTextarea.value = prompt;
+          sendMessage();
+        } else if (action === 'explain') {
+          // Auto-select general AI model
+          const genModel = state.availableModels.find(m => m.id === 'claude-3-5-sonnet') || state.availableModels[0];
+          if (genModel) selectModel(genModel.id, true);
+          switchTab('chat');
+          dom.composerTextarea.value = prompt;
+          sendMessage();
         } else {
           switchTab('chat');
           dom.composerTextarea.value = prompt;
@@ -1619,7 +1754,7 @@
       };
     });
 
-    // Theme toggle in navbar
+    // Theme toggle
     dom.themeToggleBtn.onclick = () => {
       const current = dom.html.getAttribute('data-theme') || 'dark';
       const next = current === 'dark' ? 'light' : 'dark';
@@ -1639,7 +1774,6 @@
       if (e.target === dom.settingsModal) dom.settingsModal.style.display = 'none';
     };
 
-    // Settings actions
     document.querySelectorAll('.theme-choice-btn').forEach(btn => {
       btn.onclick = () => {
         const val = btn.dataset.themeVal;
@@ -1674,11 +1808,11 @@
 
     dom.exportDataBtn.onclick = exportDataAsJSON;
     dom.syncPuterKvBtn.onclick = async () => {
-      showToast('Syncing data with Puter KV...', 'info');
+      showToast('Syncing cloud storage...', 'info');
       await saveConversations();
       await savePreferences();
       await loadPuterData();
-      showToast('Puter KV sync complete!', 'success');
+      showToast('Cloud storage synced!', 'success');
     };
     dom.clearAllChatsBtn.onclick = clearAllConversations;
 
@@ -1687,13 +1821,11 @@
       handleAuthToggle();
     };
     dom.settingsAuthBtn.onclick = handleAuthToggle;
-    if (dom.loginScreenAuthBtn) {
-      dom.loginScreenAuthBtn.onclick = handleAuthToggle;
-    }
+    if (dom.loginScreenAuthBtn) dom.loginScreenAuthBtn.onclick = handleAuthToggle;
     if (dom.loginGuestBtn) {
       dom.loginGuestBtn.onclick = () => {
         if (dom.loginScreen) dom.loginScreen.style.display = 'none';
-        showToast('Continuing as Guest', 'info');
+        showToast('Welcome! Continuing as Guest', 'info');
       };
     }
     if (dom.userProfileCard) {
@@ -1703,11 +1835,10 @@
       };
     }
 
-    // Lightbox Modal
     dom.lightboxCloseBtn.onclick = closeLightbox;
     dom.lightboxBackdrop.onclick = closeLightbox;
 
-    // Scroll state tracking to prevent fighting the user
+    // Scroll state tracking
     if (dom.chatCanvas) {
       dom.chatCanvas.addEventListener('scroll', () => {
         const threshold = 80;
@@ -1716,7 +1847,6 @@
       }, { passive: true });
     }
 
-    // Keyboard focus handling
     if (dom.composerTextarea) {
       dom.composerTextarea.addEventListener('focus', () => {
         setTimeout(() => {
@@ -1725,8 +1855,6 @@
       });
     }
   }
-
-  let isUserScrolledUp = false;
 
   function scrollToBottom(force = false) {
     if (!dom.chatCanvas) return;
@@ -1737,28 +1865,27 @@
   }
 
   function handleBackButton() {
-    // 1. If lightbox is open, close it
+    if (state.isLiveVoiceActive) {
+      closeLiveVoiceSession();
+      return true;
+    }
     if (dom.lightboxModal && dom.lightboxModal.style.display === 'flex') {
       closeLightbox();
       return true;
     }
-    // 2. If settings modal is open, close it
     if (dom.settingsModal && dom.settingsModal.style.display === 'flex') {
       dom.settingsModal.style.display = 'none';
       return true;
     }
-    // 3. If mobile sidebar is open, close it
     if (dom.sidebar && dom.sidebar.classList.contains('open')) {
       closeMobileSidebar();
       return true;
     }
-    // 4. If model menu is open, close it
     if (dom.modelMenu && dom.modelMenu.classList.contains('open')) {
       dom.modelMenu.classList.remove('open');
       dom.modelSelectBtn?.classList.remove('open');
       return true;
     }
-    // 5. If in Image Studio tab, switch back to chat tab
     if (state.activeTab === 'image') {
       switchTab('chat');
       return true;
@@ -1865,13 +1992,12 @@
     }[tag] || tag));
   }
 
-  // Global exposure for lightbox and Android native WebView bridge
+  // Global exposure for lightbox and Android native WebView back button bridge
   window.airaApp = {
     openLightbox,
     handleBackButton
   };
 
-  // Start app on DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initApp);
   } else {
