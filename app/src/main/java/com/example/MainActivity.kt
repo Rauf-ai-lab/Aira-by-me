@@ -148,7 +148,6 @@ fun AiraWebViewContainer(
           overScrollMode = View.OVER_SCROLL_NEVER
           isVerticalScrollBarEnabled = false
           isHorizontalScrollBarEnabled = false
-          setLayerType(View.LAYER_TYPE_HARDWARE, null)
 
           val assetLoader = WebViewAssetLoader.Builder()
               .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(context))

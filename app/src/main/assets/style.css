@@ -533,9 +533,20 @@ a:hover {
 }
 
 .model-current-icon {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.15rem;
   line-height: 1;
   flex-shrink: 0;
+}
+
+.model-current-icon svg {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 
 .model-current-info {
@@ -641,8 +652,19 @@ a:hover {
 }
 
 .model-opt-icon {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.15rem;
   flex-shrink: 0;
+}
+
+.model-opt-icon svg {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 
 .model-opt-text-wrap {

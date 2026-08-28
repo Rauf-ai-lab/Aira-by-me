@@ -21,10 +21,10 @@
 
 IDENTITY & ORIGIN RULES:
 - Your name is Aira.
-- You were created with care by Rauf.
-- When asked who created you, who made you, or who is behind Aira, you must always state clearly: "I was created with care by Rauf."
-- Never claim or state that you were created by OpenAI, Puter, Anthropic, Google, DeepSeek, or any other company or organization.
-- Do not use the words "developer" or "owner"; simply refer to Rauf or state that you were created with care by Rauf.
+- If asked who created you, who made you, who developed you, or who is behind Aira, your answer must remain consistent: "My developer is Rauf." or "I was created with care by Rauf."
+- If asked about your underlying engine, server, company, provider, or private infrastructure, always state: "I’m a private AI currently in beta, created by Rauf. I can’t share private infrastructure or server information."
+- Never claim or state that you were created by OpenAI, Google, Anthropic, Alibaba, Qwen, DeepSeek, Puter, Meta, or any other company or organization.
+- Do not disclose backend API providers or internal routing.
 
 CONVERSATIONAL PERSONALITY GUIDELINES:
 - Tone: Fluent, confident, natural, friendly, empathetic, and context-aware.
@@ -35,17 +35,318 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
   - If the user's name is known, address them naturally.
 - Avoid robotic clichés, repetitive disclaimers, or excessive preambles. Be genuinely helpful, conversational, and witty when appropriate.`;
 
+  // Official & high-clarity Provider SVG Logos
+  const PROVIDER_LOGOS = {
+    openai: `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M22.28 9.82a5.98 5.98 0 0 0-.51-4.91 6.05 6.05 0 0 0-6.51-2.9A6.06 6.06 0 0 0 4.98 4.18a5.98 5.98 0 0 0-4 2.9 6.05 6.05 0 0 0 .75 7.1 5.98 5.98 0 0 0 .51 4.91 6.05 6.05 0 0 0 6.51 2.9A5.98 5.98 0 0 0 13.26 24a6.05 6.05 0 0 0 5.77-4.2 5.99 5.99 0 0 0 4-2.9 6.05 6.05 0 0 0-.75-7.08zm-9.02 12.61a4.48 4.48 0 0 1-2.88-1.04l.14-.08 4.78-2.76a.8.8 0 0 0 .4-.68v-6.74l2.02 1.17a.07.07 0 0 1 .04.05v5.59a4.5 4.5 0 0 1-4.5 4.49zm-9.66-4.13a4.47 4.47 0 0 1-.54-3.01l.15.08 4.78 2.76a.77.77 0 0 0 .78 0l5.84-3.37v2.33a.08.08 0 0 1-.03.06L9.74 19.95a4.5 4.5 0 0 1-6.14-1.65zM2.34 7.9a4.49 4.49 0 0 1 2.37-1.98v5.69a.77.77 0 0 0 .39.67l5.81 3.36-2.02 1.17a.08.08 0 0 1-.07 0L4.01 13.9a4.5 4.5 0 0 1-1.67-6zm16.6 3.85L13.1 8.36l2.02-1.16a.08.08 0 0 1 .07 0l4.83 2.79a4.5 4.5 0 0 1-.68 8.1v-5.67a.79.79 0 0 0-.4-.67zm2.01-3.02l-.14-.09-4.77-2.78a.78.78 0 0 0-.79 0L9.41 9.23V6.9a.07.07 0 0 1 .03-.06l4.83-2.79a4.5 4.5 0 0 1 6.68 4.66v.01zM8.31 12.86l-2.02-1.16a.08.08 0 0 1-.04-.06V6.07a4.5 4.5 0 0 1 7.38-3.45l-.14.08L8.7 5.46a.8.8 0 0 0-.39.68v6.72zm1.07-2.15l2.62-1.51 2.63 1.51v3.03l-2.63 1.52-2.62-1.52z"/></svg>`,
+    google: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M12 2C12 7.52 7.52 12 2 12C7.52 12 12 16.48 12 22C12 16.48 16.48 12 22 12C16.48 12 12 7.52 12 2Z" fill="url(#googleGemGrad)"/><defs><linearGradient id="googleGemGrad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#4285F4"/><stop offset="0.5" stop-color="#9B72CB"/><stop offset="1" stop-color="#D96570"/></linearGradient></defs></svg>`,
+    anthropic: `<svg viewBox="0 0 24 24" width="20" height="20" fill="#D97706"><path d="M14.5 3L8 21h3.3l1.4-4h4.6l1.4 4H22L15.5 3h-1zm-1.1 11.2l1.6-4.8 1.6 4.8h-3.2zM4 15.5l3.2-9L5.4 6 2 15.5h2z"/></svg>`,
+    qwen: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M6.5 4C4 4 2 6 2 8.5c0 3.2 2.8 5.6 6 8.5 2.1 1.9 4 3 4 3s1.9-1.1 4-3c3.2-2.9 6-5.3 6-8.5C22 6 20 4 17.5 4c-2 0-3.8 1.2-4.7 3-.4.8-.8.8-1.6 0C10.3 5.2 8.5 4 6.5 4z" stroke="url(#qwenLogoGrad)" stroke-width="2.2" stroke-linejoin="round"/><circle cx="12" cy="11" r="2.5" fill="url(#qwenLogoGrad)"/><defs><linearGradient id="qwenLogoGrad" x1="2" y1="4" x2="22" y2="20" gradientUnits="userSpaceOnUse"><stop stop-color="#6366F1"/><stop offset="1" stop-color="#06B6D4"/></linearGradient></defs></svg>`,
+    deepseek: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M4 14.5C4 18 7 21 11.5 21C16.5 21 20 17 20 12.5C20 8.5 17 5 13 5C10.5 5 8.5 6.5 7.5 8L4.5 5.5C4.2 5.2 3.8 5.5 4 5.9L5.5 9.5C4.5 11 4 12.7 4 14.5Z" fill="url(#deepseekLogoGrad)"/><circle cx="14" cy="11" r="1.5" fill="#ffffff"/><defs><linearGradient id="deepseekLogoGrad" x1="4" y1="5" x2="20" y2="21" gradientUnits="userSpaceOnUse"><stop stop-color="#0284C7"/><stop offset="1" stop-color="#2563EB"/></linearGradient></defs></svg>`,
+    meta: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M16.7 4C14.7 4 13.1 5.2 12 6.8 10.9 5.2 9.3 4 7.3 4 4.4 4 2 6.4 2 9.5c0 4.6 4.3 8.3 8.3 10.2.8.4 2.6.4 3.4 0 4-1.9 8.3-5.6 8.3-10.2 0-3.1-2.4-5.5-5.3-5.5z" stroke="#0081FB" stroke-width="2.2" stroke-linecap="round"/></svg>`,
+    mistral: `<svg viewBox="0 0 24 24" width="20" height="20" fill="#F97316"><rect x="3" y="4" width="4" height="4" rx="0.5"/><rect x="17" y="4" width="4" height="4" rx="0.5"/><rect x="3" y="10" width="8" height="4" rx="0.5"/><rect x="13" y="10" width="8" height="4" rx="0.5"/><rect x="3" y="16" width="18" height="4" rx="0.5"/></svg>`,
+    flux: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none"><rect x="3" y="3" width="18" height="18" rx="4" stroke="url(#fluxLogoGrad)" stroke-width="2"/><circle cx="12" cy="12" r="4.5" stroke="url(#fluxLogoGrad)" stroke-width="2"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="url(#fluxLogoGrad)" stroke-width="2" stroke-linecap="round"/><defs><linearGradient id="fluxLogoGrad" x1="3" y1="3" x2="21" y2="21" gradientUnits="userSpaceOnUse"><stop stop-color="#EC4899"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient></defs></svg>`,
+    stability: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none"><rect x="3" y="3" width="18" height="18" rx="4" stroke="#A855F7" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="#A855F7"/><path d="M21 15l-5-5L5 21" stroke="#A855F7" stroke-width="2" stroke-linecap="round"/></svg>`,
+    aira: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="url(#airaDefaultGrad)"/><defs><linearGradient id="airaDefaultGrad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#c084fc"/></linearGradient></defs></svg>`
+  };
+
   // Model categories in priority order
   const MODEL_CATEGORIES = [
-    { id: 'general', name: 'General AI', icon: '🤖', priority: 1 },
-    { id: 'chat', name: 'Fast Chat', icon: '💬', priority: 2 },
-    { id: 'coding', name: 'Coding', icon: '💻', priority: 3 },
-    { id: 'image', name: 'Image Generation', icon: '🎨', priority: 4 },
-    { id: 'vision', name: 'Vision', icon: '👁️', priority: 5 },
-    { id: 'reasoning', name: 'Reasoning', icon: '🧠', priority: 6 },
-    { id: 'voice', name: 'Voice & Speech', icon: '🎙️', priority: 7 },
-    { id: 'video', name: 'Video', icon: '🎬', priority: 8 }
+    { id: 'chat', name: 'Chat & Multimodal AI', icon: '💬', priority: 1 },
+    { id: 'reasoning', name: 'Reasoning & Logic', icon: '🧠', priority: 2 },
+    { id: 'coding', name: 'Coding & Dev', icon: '💻', priority: 3 },
+    { id: 'vision', name: 'Vision & Perception', icon: '👁️', priority: 4 },
+    { id: 'image', name: 'Image Generation', icon: '🎨', priority: 5 },
+    { id: 'voice', name: 'Audio & Speech', icon: '🎙️', priority: 6 },
+    { id: 'general', name: 'General AI', icon: '✨', priority: 7 }
   ];
+
+  function getProviderFromModel(rawModel) {
+    let id = '';
+    let metaProvider = '';
+    if (typeof rawModel === 'string') {
+      id = rawModel.trim();
+    } else if (rawModel && typeof rawModel === 'object') {
+      id = (rawModel.id || rawModel.name || '').trim();
+      metaProvider = (rawModel.provider || rawModel.vendor || rawModel.owner || '').trim().toLowerCase();
+    }
+    const idLower = id.toLowerCase();
+
+    // Check metaProvider first if returned by Puter
+    if (metaProvider) {
+      if (metaProvider.includes('openai')) return 'openai';
+      if (metaProvider.includes('google') || metaProvider.includes('gemini')) return 'google';
+      if (metaProvider.includes('anthropic') || metaProvider.includes('claude')) return 'anthropic';
+      if (metaProvider.includes('qwen') || metaProvider.includes('alibaba') || metaProvider.includes('ali')) return 'qwen';
+      if (metaProvider.includes('deepseek')) return 'deepseek';
+      if (metaProvider.includes('meta') || metaProvider.includes('llama')) return 'meta';
+      if (metaProvider.includes('mistral')) return 'mistral';
+      if (metaProvider.includes('black-forest') || metaProvider.includes('flux') || metaProvider.includes('bfl')) return 'flux';
+      if (metaProvider.includes('stability')) return 'stability';
+    }
+
+    // Inspect Model ID prefix / signature
+    if (idLower.startsWith('openai/') || idLower.includes('gpt') || idLower.includes('dall-e') || idLower.includes('dalle') || idLower.startsWith('o1') || idLower.startsWith('o3') || idLower.includes('chatgpt')) {
+      return 'openai';
+    }
+    if (idLower.startsWith('google/') || idLower.includes('gemini') || idLower.includes('gemma') || idLower.includes('palm') || idLower.includes('imagen')) {
+      return 'google';
+    }
+    if (idLower.startsWith('anthropic/') || idLower.includes('claude')) {
+      return 'anthropic';
+    }
+    if (idLower.startsWith('qwen/') || idLower.includes('qwen') || idLower.includes('qvq') || idLower.includes('qwq')) {
+      return 'qwen';
+    }
+    if (idLower.startsWith('deepseek/') || idLower.includes('deepseek')) {
+      return 'deepseek';
+    }
+    if (idLower.startsWith('meta-llama/') || idLower.startsWith('meta/') || idLower.includes('llama')) {
+      return 'meta';
+    }
+    if (idLower.startsWith('mistralai/') || idLower.startsWith('mistral/') || idLower.includes('mistral') || idLower.includes('codestral') || idLower.includes('pixtral')) {
+      return 'mistral';
+    }
+    if (idLower.includes('flux')) {
+      return 'flux';
+    }
+    if (idLower.includes('stable-diffusion') || idLower.includes('sdxl')) {
+      return 'stability';
+    }
+
+    return 'aira';
+  }
+
+  function getModelBrandedNameAndCapability(id, rawMeta) {
+    const idLower = id.toLowerCase();
+    let name = '';
+    let capability = '';
+    let isImage = false;
+    let isCoding = false;
+    let isReasoning = false;
+    let isVision = false;
+
+    // 1. Image Generation Models
+    if (idLower.includes('txt2img') || idLower.includes('dall-e') || idLower.includes('dalle') ||
+        idLower.includes('flux') || idLower.includes('stable-diffusion') || idLower.includes('sdxl') ||
+        idLower.includes('imagen') || rawMeta.type === 'image') {
+      isImage = true;
+      capability = 'For Image Generation';
+
+      if (idLower.includes('flux-schnell')) name = 'Aira Flux Schnell';
+      else if (idLower.includes('flux-dev')) name = 'Aira Flux Dev';
+      else if (idLower.includes('flux-1.1') || idLower.includes('flux-pro')) name = 'Aira Flux Pro';
+      else if (idLower.includes('flux')) name = 'Aira Flux Image';
+      else if (idLower.includes('dall-e-3') || idLower.includes('dalle-3')) name = 'Aira DALL-E 3';
+      else if (idLower.includes('dall-e-2') || idLower.includes('dalle-2')) name = 'Aira DALL-E 2';
+      else if (idLower.includes('sdxl') || idLower.includes('stable-diffusion-xl')) name = 'Aira SDXL';
+      else if (idLower.includes('stable-diffusion')) name = 'Aira Stable Diffusion';
+      else name = 'Aira Image Generator';
+
+      return { name, capability, isImage, isCoding, isReasoning, isVision, category: 'image', type: 'image' };
+    }
+
+    // 2. Qwen Model Family
+    if (idLower.includes('qvq')) {
+      name = 'Aira Qwen QVQ Max';
+      capability = 'For Vision & Reasoning';
+      isVision = true;
+      isReasoning = true;
+    } else if (idLower.includes('qwen-qv-max') || idLower.includes('qwen-vl-max') || idLower.includes('qv-max')) {
+      name = 'Aira Qwen QV Max';
+      capability = 'For General AI & Reasoning';
+      isVision = true;
+      isReasoning = true;
+    } else if (idLower.includes('qwq')) {
+      name = 'Aira QwQ 32B';
+      capability = 'For Reasoning';
+      isReasoning = true;
+    } else if (idLower.includes('qwen') && (idLower.includes('coder') || idLower.includes('code'))) {
+      if (idLower.includes('32b')) name = 'Aira Qwen 2.5 Coder 32B';
+      else name = 'Aira Qwen Coder';
+      capability = 'For Coding';
+      isCoding = true;
+    } else if (idLower.includes('qwen-2.5-72b') || idLower.includes('qwen-2.5-72b-instruct')) {
+      name = 'Aira Qwen 2.5 72B';
+      capability = 'For General AI & Reasoning';
+      isReasoning = true;
+    } else if (idLower.includes('qwen-max')) {
+      name = 'Aira Qwen Max';
+      capability = 'For General AI & Reasoning';
+      isReasoning = true;
+    } else if (idLower.includes('qwen-plus')) {
+      name = 'Aira Qwen Plus';
+      capability = 'For Chatting';
+    } else if (idLower.includes('qwen-turbo')) {
+      name = 'Aira Qwen Turbo';
+      capability = 'For Chatting';
+    } else if (idLower.includes('qwen')) {
+      name = 'Aira Qwen 2.5';
+      capability = 'For Chatting & Reasoning';
+      isReasoning = true;
+    }
+
+    // 3. OpenAI Model Family
+    else if (idLower.includes('gpt-4o-mini')) {
+      name = 'Aira GPT-4o Mini';
+      capability = 'For Chatting';
+      isVision = true;
+    } else if (idLower.includes('gpt-4o')) {
+      name = 'Aira GPT-4o';
+      capability = 'For Chatting & Vision';
+      isVision = true;
+    } else if (idLower.includes('gpt-4-turbo') || idLower.includes('gpt-4')) {
+      name = 'Aira GPT-4';
+      capability = 'For Chatting';
+    } else if (idLower.includes('o1-mini')) {
+      name = 'Aira O1 Mini';
+      capability = 'For Reasoning';
+      isReasoning = true;
+    } else if (idLower.includes('o1-preview') || idLower.includes('o1')) {
+      name = 'Aira O1 Reasoning';
+      capability = 'For Reasoning';
+      isReasoning = true;
+    } else if (idLower.includes('o3-mini') || idLower.includes('o3')) {
+      name = 'Aira O3 Reasoning';
+      capability = 'For Reasoning & Coding';
+      isReasoning = true;
+      isCoding = true;
+    } else if (idLower.includes('gpt-3.5') || idLower.includes('chatgpt')) {
+      name = 'Aira GPT-3.5';
+      capability = 'For Chatting';
+    }
+
+    // 4. Google Gemini Model Family
+    else if (idLower.includes('gemini-2.0-flash-thinking')) {
+      name = 'Aira Gemini 2.0 Thinking';
+      capability = 'For Reasoning & Multimodal AI';
+      isReasoning = true;
+      isVision = true;
+    } else if (idLower.includes('gemini-2.0-flash')) {
+      name = 'Aira Gemini 2.0 Flash';
+      capability = 'For Chatting & Multimodal AI';
+      isVision = true;
+    } else if (idLower.includes('gemini-1.5-pro')) {
+      name = 'Aira Gemini 1.5 Pro';
+      capability = 'For Vision & Reasoning';
+      isVision = true;
+      isReasoning = true;
+    } else if (idLower.includes('gemini-1.5-flash')) {
+      name = 'Aira Gemini 1.5 Flash';
+      capability = 'For Chatting & Vision';
+      isVision = true;
+    } else if (idLower.includes('gemini')) {
+      name = 'Aira Gemini';
+      capability = 'For Chatting & Multimodal AI';
+      isVision = true;
+    } else if (idLower.includes('gemma-2') || idLower.includes('gemma')) {
+      name = 'Aira Gemma 2';
+      capability = 'For Chatting';
+    }
+
+    // 5. Anthropic Claude Model Family
+    else if (idLower.includes('claude-3-7-sonnet') || idLower.includes('claude-3.7-sonnet') || idLower.includes('claude-3-7')) {
+      name = 'Aira Claude 3.7 Sonnet';
+      capability = 'For Vision & Reasoning';
+      isVision = true;
+      isReasoning = true;
+    } else if (idLower.includes('claude-3-5-sonnet') || idLower.includes('claude-3.5-sonnet')) {
+      name = 'Aira Claude 3.5 Sonnet';
+      capability = 'For Coding & Vision';
+      isCoding = true;
+      isVision = true;
+    } else if (idLower.includes('claude-3-5-haiku') || idLower.includes('claude-3-haiku') || idLower.includes('haiku')) {
+      name = 'Aira Claude 3.5 Haiku';
+      capability = 'For Chatting';
+    } else if (idLower.includes('claude-3-opus') || idLower.includes('claude-3.0-opus')) {
+      name = 'Aira Claude 3 Opus';
+      capability = 'For Deep Reasoning';
+      isReasoning = true;
+    } else if (idLower.includes('claude')) {
+      name = 'Aira Claude';
+      capability = 'For Chatting & Reasoning';
+      isReasoning = true;
+    }
+
+    // 6. DeepSeek Model Family
+    else if (idLower.includes('deepseek-reasoner') || idLower.includes('deepseek-r1') || idLower.includes('r1')) {
+      name = 'Aira DeepSeek R1';
+      capability = 'For Reasoning';
+      isReasoning = true;
+    } else if (idLower.includes('deepseek-coder') || idLower.includes('deepseek-code')) {
+      name = 'Aira DeepSeek Code';
+      capability = 'For Coding';
+      isCoding = true;
+    } else if (idLower.includes('deepseek-chat') || idLower.includes('deepseek-v3') || idLower.includes('deepseek')) {
+      name = 'Aira DeepSeek V3';
+      capability = 'For Chatting';
+    }
+
+    // 7. Meta Llama Model Family
+    else if (idLower.includes('llama-3.3') || idLower.includes('llama-3.3-70b')) {
+      name = 'Aira Llama 3.3 70B';
+      capability = 'For General AI & Reasoning';
+      isReasoning = true;
+    } else if (idLower.includes('llama-3.1-405b')) {
+      name = 'Aira Llama 3.1 405B';
+      capability = 'For Deep Reasoning';
+      isReasoning = true;
+    } else if (idLower.includes('llama-3.1-70b') || idLower.includes('llama-3-70b')) {
+      name = 'Aira Llama 3 70B';
+      capability = 'For General AI';
+    } else if (idLower.includes('llama-3.1-8b') || idLower.includes('llama-3-8b') || idLower.includes('llama')) {
+      name = 'Aira Llama 3 8B';
+      capability = 'For Chatting';
+    }
+
+    // 8. Mistral Model Family
+    else if (idLower.includes('codestral')) {
+      name = 'Aira Codestral';
+      capability = 'For Coding';
+      isCoding = true;
+    } else if (idLower.includes('pixtral')) {
+      name = 'Aira Pixtral';
+      capability = 'For Vision';
+      isVision = true;
+    } else if (idLower.includes('mistral-large')) {
+      name = 'Aira Mistral Large';
+      capability = 'For General AI & Reasoning';
+      isReasoning = true;
+    } else if (idLower.includes('mistral-small') || idLower.includes('mistral-nemo') || idLower.includes('mistral')) {
+      name = 'Aira Mistral';
+      capability = 'For Chatting';
+    }
+
+    // 9. Speech / Audio
+    else if (idLower.includes('whisper') || idLower.includes('tts') || idLower.includes('speech')) {
+      name = 'Aira Voice Model';
+      capability = 'For Audio / Voice';
+    }
+
+    // 10. Fallback clean name and dynamic capability
+    else {
+      const cleanId = id.split('/').pop().replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      name = 'Aira ' + cleanId;
+      if (idLower.includes('code') || idLower.includes('coder')) {
+        capability = 'For Coding';
+        isCoding = true;
+      } else if (idLower.includes('vision') || idLower.includes('vl') || idLower.includes('ocr')) {
+        capability = 'For Vision';
+        isVision = true;
+      } else if (idLower.includes('reason') || idLower.includes('think') || idLower.includes('math')) {
+        capability = 'For Reasoning';
+        isReasoning = true;
+      } else {
+        capability = 'For Chatting';
+      }
+    }
+
+    let category = 'chat';
+    if (isReasoning) category = 'reasoning';
+    else if (isCoding) category = 'coding';
+    else if (isVision) category = 'vision';
+
+    return { name, capability, isImage, isCoding, isReasoning, isVision, category, type: 'chat' };
+  }
 
   function classifyModel(rawModel) {
     let id = '';
@@ -56,113 +357,35 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
       id = (rawModel.id || rawModel.name || '').trim();
       rawMeta = rawModel;
     }
-    const idLower = id.toLowerCase();
-
-    const isImageGen = idLower.includes('txt2img') || idLower.includes('dall-e') || idLower.includes('dalle') ||
-                       idLower.includes('flux') || idLower.includes('stable-diffusion') || idLower.includes('sdxl') ||
-                       idLower.includes('imagen') || rawMeta.type === 'image';
-
-    const isVideo = idLower.includes('video') || idLower.includes('sora') || idLower.includes('runway');
-    const isSpeech = idLower.includes('speech') || idLower.includes('tts') || idLower.includes('whisper');
-    const isCoding = idLower.includes('coder') || idLower.includes('deepseek-coder') || idLower.includes('codellama');
-    const isReasoning = idLower.includes('reasoner') || idLower.includes('o1') || idLower.includes('o3') || idLower.includes('qwq') || idLower.includes('r1');
-    const isVision = !isImageGen && (idLower.includes('vision') || idLower.includes('4o') || idLower.includes('gemini-1.5') || idLower.includes('gemini-2.0') || idLower.includes('claude-3'));
-    const isFastChat = idLower.includes('mini') || idLower.includes('flash') || idLower.includes('small') || idLower.includes('turbo');
-
-    let category = 'general';
-    let icon = '🤖';
-    let capability = 'General AI';
-    let type = 'chat';
-
-    if (isImageGen) {
-      category = 'image';
-      icon = '🎨';
-      capability = 'Image Generation';
-      type = 'image';
-    } else if (isVideo) {
-      category = 'video';
-      icon = '🎬';
-      capability = 'Video Generation';
-      type = 'video';
-    } else if (isSpeech) {
-      category = 'voice';
-      icon = '🎙️';
-      capability = 'Voice & Speech';
-      type = 'speech';
-    } else if (isCoding) {
-      category = 'coding';
-      icon = '💻';
-      capability = 'Coding & Dev';
-      type = 'chat';
-    } else if (isReasoning) {
-      category = 'reasoning';
-      icon = '🧠';
-      capability = 'Deep Reasoning';
-      type = 'chat';
-    } else if (isFastChat) {
-      category = 'chat';
-      icon = '💬';
-      capability = 'Fast Chat';
-      type = 'chat';
-    } else if (isVision) {
-      category = 'vision';
-      icon = '👁️';
-      capability = 'Vision & OCR';
-      type = 'chat';
-    }
-
-    // Friendly display name
-    let name = '';
-    if (isImageGen) {
-      if (idLower.includes('flux')) name = 'Aira Flux Image';
-      else if (idLower.includes('dall-e-3') || idLower.includes('dalle-3')) name = 'Aira DALL-E 3';
-      else if (idLower.includes('stable-diffusion') || idLower.includes('sdxl')) name = 'Aira SDXL';
-      else name = 'Aira Image (' + id + ')';
-    } else if (idLower.includes('claude-3-7') || idLower.includes('claude-3.7')) {
-      name = 'Aira Claude 3.7';
-    } else if (idLower.includes('claude-3-5') || idLower.includes('claude-3.5')) {
-      name = 'Aira Claude 3.5';
-    } else if (idLower.includes('gpt-4o-mini')) {
-      name = 'Aira GPT-4o Mini';
-    } else if (idLower.includes('gpt-4o')) {
-      name = 'Aira GPT-4o';
-    } else if (idLower.includes('deepseek-coder')) {
-      name = 'Aira DeepSeek Code';
-    } else if (idLower.includes('deepseek-reasoner') || idLower.includes('r1')) {
-      name = 'Aira DeepSeek R1';
-    } else if (idLower.includes('deepseek')) {
-      name = 'Aira DeepSeek';
-    } else if (idLower.includes('gemini-2.0')) {
-      name = 'Aira Gemini 2.0 Flash';
-    } else if (idLower.includes('gemini-1.5-pro')) {
-      name = 'Aira Gemini 1.5 Pro';
-    } else if (idLower.includes('gemini-1.5')) {
-      name = 'Aira Gemini Flash';
-    } else {
-      name = 'Aira ' + id.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-    }
+    const providerKey = getProviderFromModel(rawModel);
+    const logoSvg = PROVIDER_LOGOS[providerKey] || PROVIDER_LOGOS.aira;
+    const classified = getModelBrandedNameAndCapability(id, rawMeta);
 
     return {
       id,
-      name,
-      category,
-      icon,
-      capability,
-      type,
-      isImage: isImageGen,
-      isCoding,
-      isReasoning,
-      isVision
+      name: classified.name,
+      capability: classified.capability,
+      category: classified.category,
+      provider: providerKey,
+      logoSvg: logoSvg,
+      icon: logoSvg,
+      type: classified.type,
+      isImage: classified.isImage,
+      isCoding: classified.isCoding,
+      isReasoning: classified.isReasoning,
+      isVision: classified.isVision
     };
   }
 
   const INITIAL_FALLBACK_MODELS = [
     classifyModel('gpt-4o-mini'),
     classifyModel('gpt-4o'),
-    classifyModel('claude-3-7-sonnet'),
     classifyModel('gemini-2.0-flash'),
-    classifyModel('gemini-1.5-flash'),
-    classifyModel('deepseek-chat'),
+    classifyModel('claude-3-7-sonnet'),
+    classifyModel('deepseek-reasoner'),
+    classifyModel('deepseek-coder'),
+    classifyModel('qwen/qvq-72b-preview'),
+    classifyModel('qwen-qv-max'),
     classifyModel('flux-schnell'),
     classifyModel('dall-e-3')
   ];
@@ -546,7 +769,7 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
         const isCurrent = model.id === state.activeModelId;
         item.innerHTML = `
           <div class="model-option-left">
-            <span class="model-opt-icon">${model.icon}</span>
+            <span class="model-opt-icon">${model.logoSvg}</span>
             <div class="model-opt-text-wrap">
               <span class="model-opt-name">${escapeHTML(model.name)}</span>
               <span class="model-opt-capability">${escapeHTML(model.capability)}</span>
@@ -564,7 +787,7 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
         if (dom.settingsDefaultModelSelect) {
           const opt = document.createElement('option');
           opt.value = model.id;
-          opt.textContent = `${model.icon} ${model.name} (${model.capability})`;
+          opt.textContent = `${model.name} — ${model.capability}`;
           if (model.id === state.preferences.defaultModel) opt.selected = true;
           dom.settingsDefaultModelSelect.appendChild(opt);
         }
@@ -577,7 +800,7 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
   function updateModelDisplay() {
     const activeModel = state.availableModels.find(m => m.id === state.activeModelId) || state.availableModels[0];
     if (activeModel) {
-      if (dom.currentModelIcon) dom.currentModelIcon.textContent = activeModel.icon;
+      if (dom.currentModelIcon) dom.currentModelIcon.innerHTML = activeModel.logoSvg;
       if (dom.currentModelDisplay) dom.currentModelDisplay.textContent = activeModel.name;
       if (dom.currentModelCapability) dom.currentModelCapability.textContent = activeModel.capability;
 
@@ -637,8 +860,7 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
       const validInPool = state.availableModels.some(m => m.id === conv.modelId);
       if (validInPool) {
         state.activeModelId = conv.modelId;
-        const modelObj = state.availableModels.find(m => m.id === conv.modelId);
-        if (modelObj) dom.currentModelDisplay.textContent = modelObj.name;
+        updateModelDisplay();
       }
     }
     renderConversationsList();
