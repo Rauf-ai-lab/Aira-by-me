@@ -116,15 +116,18 @@
           
           <!-- Model Selector Pill -->
           <div class="model-picker-dropdown" id="modelPickerContainer">
-            <button class="model-select-btn" id="modelSelectBtn" data-test-tag="model_selector_button">
-              <span class="model-indicator-glow"></span>
-              <span class="model-current-name" id="currentModelDisplay">Aira 3.1 Pro</span>
+            <button class="model-select-btn" id="modelSelectBtn" data-test-tag="model_selector_button" aria-expanded="false" title="Select AI Model">
+              <span class="model-current-icon" id="currentModelIcon">🤖</span>
+              <div class="model-current-info">
+                <span class="model-current-name" id="currentModelDisplay">Aira 3.5 Sonnet</span>
+                <span class="model-current-capability" id="currentModelCapability">AI / Chat • Reasoning</span>
+              </div>
               <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" class="dropdown-chevron"><path d="M6 9l6 6 6-6"/></svg>
             </button>
 
             <!-- Dropdown Menu -->
             <div class="model-menu" id="modelMenu">
-              <div class="model-menu-header">Select Aira Engine</div>
+              <div class="model-menu-header">MODEL</div>
               <div class="model-options" id="modelOptionsList">
                 <!-- Dynamically generated model options -->
               </div>

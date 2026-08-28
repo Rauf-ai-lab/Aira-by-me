@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import android.view.ViewGroup
 import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
@@ -75,7 +76,6 @@ class MainActivity : ComponentActivity() {
               modifier = Modifier
                   .fillMaxSize()
                   .systemBarsPadding()
-                  .imePadding()
           ) {
             AiraWebViewContainer(
                 onOpenFileChooser = { callback ->
@@ -104,8 +104,19 @@ class MainActivity : ComponentActivity() {
   @Deprecated("Deprecated in Java")
   override fun onBackPressed() {
     val webView = currentWebView
-    if (webView != null && webView.canGoBack()) {
-      webView.goBack()
+    if (webView != null) {
+      // Allow WebView JavaScript to handle back action (e.g. closing modals/sidebars)
+      webView.evaluateJavascript(
+          "if (window.airaApp && typeof window.airaApp.handleBackButton === 'function') { window.airaApp.handleBackButton(); } else { false; }"
+      ) { result ->
+        if (result != "true") {
+          if (webView.canGoBack()) {
+            webView.goBack()
+          } else {
+            super.onBackPressed()
+          }
+        }
+      }
     } else {
       super.onBackPressed()
     }
@@ -134,6 +145,10 @@ fun AiraWebViewContainer(
           MainActivity.currentWebView = this
 
           setBackgroundColor(0xFF0E0E10.toInt()) // Match dark theme background
+          overScrollMode = View.OVER_SCROLL_NEVER
+          isVerticalScrollBarEnabled = false
+          isHorizontalScrollBarEnabled = false
+          setLayerType(View.LAYER_TYPE_HARDWARE, null)
 
           val assetLoader = WebViewAssetLoader.Builder()
               .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(context))
@@ -154,8 +169,8 @@ fun AiraWebViewContainer(
             cacheMode = WebSettings.LOAD_DEFAULT
             useWideViewPort = true
             loadWithOverviewMode = true
-            setSupportZoom(true)
-            builtInZoomControls = true
+            setSupportZoom(false)
+            builtInZoomControls = false
             displayZoomControls = false
             setSupportMultipleWindows(true)
             javaScriptCanOpenWindowsAutomatically = true

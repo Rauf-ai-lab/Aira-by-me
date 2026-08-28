@@ -19,15 +19,132 @@
     kvPrefsKey: 'aira_v1_preferences'
   };
 
-  // Supported Puter models mapped to Aira Branding
+  // Model Classification & Capability Mapper for Puter AI
+  function classifyModel(rawModel) {
+    let id = '';
+    let rawMeta = {};
+    if (typeof rawModel === 'string') {
+      id = rawModel.trim();
+    } else if (rawModel && typeof rawModel === 'object') {
+      id = (rawModel.id || rawModel.name || '').trim();
+      rawMeta = rawModel;
+    }
+    const idLower = id.toLowerCase();
+
+    // 1. Identify Image Generation Models
+    const isImageGen = idLower.includes('txt2img') ||
+                       idLower.includes('dall-e') ||
+                       idLower.includes('dalle') ||
+                       idLower.includes('flux') ||
+                       idLower.includes('stable-diffusion') ||
+                       idLower.includes('sdxl') ||
+                       idLower.includes('imagen') ||
+                       idLower.includes('midjourney') ||
+                       rawMeta.type === 'image' ||
+                       (Array.isArray(rawMeta.capabilities) && rawMeta.capabilities.includes('image-generation'));
+
+    // 2. Identify Video Generation Models
+    const isVideo = idLower.includes('video') ||
+                    idLower.includes('sora') ||
+                    idLower.includes('runway') ||
+                    idLower.includes('luma') ||
+                    (Array.isArray(rawMeta.capabilities) && rawMeta.capabilities.includes('video'));
+
+    // 3. Identify Speech / Audio Models
+    const isSpeech = idLower.includes('speech') ||
+                     idLower.includes('tts') ||
+                     idLower.includes('whisper') ||
+                     idLower.includes('audio') ||
+                     (Array.isArray(rawMeta.capabilities) && rawMeta.capabilities.includes('speech'));
+
+    // 4. Identify Reasoning, Vision & Coding Capabilities
+    const isCoding = idLower.includes('coder') || idLower.includes('deepseek-coder') || idLower.includes('codellama') || idLower.includes('starcoder');
+    const isReasoning = idLower.includes('r1') || idLower.includes('reasoner') || idLower.includes('o1') || idLower.includes('o3') || idLower.includes('thinking') || idLower.includes('qwq');
+    const isVision = !isImageGen && (idLower.includes('vision') || idLower.includes('4o') || idLower.includes('gemini-1.5') || idLower.includes('gemini-2.0') || idLower.includes('claude-3') || idLower.includes('gpt-4-turbo') || idLower.includes('pixtral') || idLower.includes('llava'));
+
+    let icon = '🤖';
+    let capability = 'AI / Chat';
+    let type = 'chat';
+
+    if (isImageGen) {
+      icon = '🎨';
+      capability = 'Image Generation';
+      type = 'image';
+    } else if (isVideo) {
+      icon = '🎬';
+      capability = 'Video Generation';
+      type = 'video';
+    } else if (isSpeech) {
+      icon = '🎙️';
+      capability = 'Speech / Voice';
+      type = 'speech';
+    } else {
+      const tags = ['AI / Chat'];
+      if (isReasoning) tags.push('Reasoning');
+      if (isVision) tags.push('Vision');
+      if (isCoding) tags.push('Coding');
+      capability = tags.join(' • ');
+    }
+
+    // Polished Aira brand display names
+    let name = '';
+    if (isImageGen) {
+      if (idLower.includes('flux')) name = 'Aira Flux Image';
+      else if (idLower.includes('dall-e-3') || idLower.includes('dalle-3')) name = 'Aira DALL-E 3';
+      else if (idLower.includes('stable-diffusion') || idLower.includes('sdxl')) name = 'Aira SDXL';
+      else name = 'Aira ' + id.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    } else if (idLower.includes('claude-3-5') || idLower.includes('claude-3.5')) {
+      name = 'Aira 3.5 Sonnet';
+    } else if (idLower.includes('claude-3-7') || idLower.includes('claude-3.7')) {
+      name = 'Aira 3.7 Sonnet';
+    } else if (idLower.includes('gpt-4o-mini')) {
+      name = 'Aira GPT-4 Mini';
+    } else if (idLower.includes('gpt-4o')) {
+      name = 'Aira GPT-4o';
+    } else if (idLower.includes('gpt-4')) {
+      name = 'Aira GPT-4';
+    } else if (idLower.includes('deepseek-reasoner') || idLower.includes('r1')) {
+      name = 'Aira DeepSeek R1';
+    } else if (idLower.includes('deepseek')) {
+      name = 'Aira DeepSeek';
+    } else if (idLower.includes('gemini-2.0')) {
+      name = 'Aira Gemini 2.0';
+    } else if (idLower.includes('gemini-1.5-pro')) {
+      name = 'Aira Gemini 1.5 Pro';
+    } else if (idLower.includes('gemini-1.5')) {
+      name = 'Aira Gemini Flash';
+    } else if (idLower.includes('llama-3.1') || idLower.includes('llama-3-1')) {
+      name = 'Aira 3.1 Pro';
+    } else if (idLower.includes('mistral-large')) {
+      name = 'Aira Mistral Large';
+    } else {
+      name = 'Aira ' + id.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    return {
+      id: id,
+      name: name,
+      icon: icon,
+      capability: capability,
+      type: type,
+      isImage: isImageGen,
+      isReasoning: isReasoning,
+      isVision: isVision,
+      isCoding: isCoding
+    };
+  }
+
+  // Supported Puter models mapped to Aira Branding with accurate capabilities
   const DEFAULT_MODELS = [
-    { id: 'claude-3-5-sonnet', name: 'Aira 3.5 Sonnet', badge: 'Smartest', desc: 'Superior reasoning, coding, and creative tasks' },
-    { id: 'gpt-4o', name: 'Aira GPT-4o', badge: 'Multimodal', desc: 'High intelligence and fast multimodal analysis' },
-    { id: 'gpt-4o-mini', name: 'Aira GPT-4 Mini', badge: 'Fast', desc: 'Speedy response time with strong general intelligence' },
-    { id: 'gemini-1.5-flash', name: 'Aira Gemini Flash', badge: 'Ultra-Fast', desc: 'Low latency and high context window' },
-    { id: 'gemini-2.0-flash', name: 'Aira Gemini 2.0', badge: 'Next-Gen', desc: 'Latest high performance model with deep knowledge' },
-    { id: 'deepseek-chat', name: 'Aira DeepSeek', badge: 'Reasoning', desc: 'Advanced coding and mathematical problem solving' },
-    { id: 'mistral-large-latest', name: 'Aira Mistral Large', badge: 'Balanced', desc: 'Strong multi-language fluency and reasoning' }
+    classifyModel('claude-3-5-sonnet'),
+    classifyModel('gpt-4o'),
+    classifyModel('gpt-4o-mini'),
+    classifyModel('deepseek-reasoner'),
+    classifyModel('gemini-2.0-flash'),
+    classifyModel('gemini-1.5-flash'),
+    classifyModel('flux-schnell'),
+    classifyModel('dall-e-3'),
+    classifyModel('mistral-large-latest')
   ];
 
   let state = {
@@ -80,8 +197,11 @@
     themeToggleBtn: document.getElementById('themeToggleBtn'),
 
     // Top Bar & Model Selector
+    modelPickerContainer: document.getElementById('modelPickerContainer'),
     modelSelectBtn: document.getElementById('modelSelectBtn'),
+    currentModelIcon: document.getElementById('currentModelIcon'),
     currentModelDisplay: document.getElementById('currentModelDisplay'),
+    currentModelCapability: document.getElementById('currentModelCapability'),
     modelMenu: document.getElementById('modelMenu'),
     modelOptionsList: document.getElementById('modelOptionsList'),
     modeChatTab: document.getElementById('modeChatTab'),
@@ -294,41 +414,26 @@
   }
 
   // ==========================================
-  // 5. PUTER AI MODELS LISTING
+  // 5. PUTER AI MODELS LISTING & SELECTOR
   // ==========================================
   async function fetchPuterModels() {
     try {
-      if (window.puter && puter.ai && puter.ai.listModels) {
-        const rawModels = await puter.ai.listModels();
-        if (Array.isArray(rawModels) && rawModels.length > 0) {
-          // Format model names with Aira branding
-          const formatted = rawModels.map(m => {
-            const id = typeof m === 'string' ? m : (m.id || m.name);
-            let airaName = 'Aira ' + id.replace(/[-_]/g, ' ').replace(/^(gpt|claude|gemini|deepseek|mistral|llama)/i, (match) => {
-              return match.charAt(0).toUpperCase() + match.slice(1).toLowerCase();
-            });
-            // Polish common model names
-            if (id.includes('claude-3-5') || id.includes('claude-3.5')) airaName = 'Aira 3.5 Claude';
-            else if (id.includes('gpt-4o-mini')) airaName = 'Aira GPT-4 Mini';
-            else if (id.includes('gpt-4o')) airaName = 'Aira GPT-4o';
-            else if (id.includes('gemini-2.0')) airaName = 'Aira Gemini 2.0';
-            else if (id.includes('gemini-1.5')) airaName = 'Aira Gemini 1.5';
-            else if (id.includes('deepseek')) airaName = 'Aira DeepSeek';
-            else if (id.includes('llama-3.1')) airaName = 'Aira 3.1 Pro';
+      if (window.puter && puter.ai) {
+        let fetched = null;
+        if (typeof puter.ai.listModels === 'function') {
+          fetched = await puter.ai.listModels();
+        } else if (typeof puter.ai.models === 'function') {
+          fetched = await puter.ai.models();
+        } else if (Array.isArray(puter.ai.models)) {
+          fetched = puter.ai.models;
+        }
 
-            return {
-              id: id,
-              name: airaName,
-              badge: id.includes('mini') || id.includes('flash') ? 'Fast' : (id.includes('claude') || id.includes('gpt-4') ? 'Pro' : 'AI'),
-              desc: `Puter.ai engine (${id})`
-            };
-          });
-
-          // Deduplicate
+        if (Array.isArray(fetched) && fetched.length > 0) {
+          const list = fetched.map(m => classifyModel(m));
           const unique = [];
           const seen = new Set();
-          for (const item of formatted) {
-            if (!seen.has(item.id)) {
+          for (const item of list) {
+            if (item.id && !seen.has(item.id)) {
               seen.add(item.id);
               unique.push(item);
             }
@@ -345,19 +450,23 @@
   }
 
   function renderModelSelector() {
+    if (!dom.modelOptionsList) return;
     dom.modelOptionsList.innerHTML = '';
-    dom.settingsDefaultModelSelect.innerHTML = '';
+    if (dom.settingsDefaultModelSelect) dom.settingsDefaultModelSelect.innerHTML = '';
 
     state.availableModels.forEach(model => {
       // Top nav dropdown option
       const item = document.createElement('div');
       item.className = `model-option-item ${model.id === state.activeModelId ? 'active' : ''}`;
       item.innerHTML = `
-        <div class="model-option-top">
-          <span class="model-opt-name">${escapeHTML(model.name)}</span>
-          <span class="model-opt-badge">${escapeHTML(model.badge)}</span>
+        <div class="model-option-left">
+          <span class="model-opt-icon">${model.icon}</span>
+          <div class="model-opt-text-wrap">
+            <span class="model-opt-name">${escapeHTML(model.name)}</span>
+            <span class="model-opt-capability">${escapeHTML(model.capability)}</span>
+          </div>
         </div>
-        <div class="model-opt-desc">${escapeHTML(model.desc)}</div>
+        ${model.id === state.activeModelId ? '<span class="model-check-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="20 6 9 17 4 12"/></svg></span>' : ''}
       `;
       item.onclick = () => {
         selectModel(model.id);
@@ -367,16 +476,34 @@
       dom.modelOptionsList.appendChild(item);
 
       // Settings dropdown option
-      const opt = document.createElement('option');
-      opt.value = model.id;
-      opt.textContent = `${model.name} (${model.badge})`;
-      if (model.id === state.preferences.defaultModel) opt.selected = true;
-      dom.settingsDefaultModelSelect.appendChild(opt);
+      if (dom.settingsDefaultModelSelect) {
+        const opt = document.createElement('option');
+        opt.value = model.id;
+        opt.textContent = `${model.icon} ${model.name} — ${model.capability}`;
+        if (model.id === state.preferences.defaultModel) opt.selected = true;
+        dom.settingsDefaultModelSelect.appendChild(opt);
+      }
     });
 
+    updateModelDisplay();
+  }
+
+  function updateModelDisplay() {
     const activeModel = state.availableModels.find(m => m.id === state.activeModelId) || state.availableModels[0];
     if (activeModel) {
-      dom.currentModelDisplay.textContent = activeModel.name;
+      if (dom.currentModelIcon) dom.currentModelIcon.textContent = activeModel.icon;
+      if (dom.currentModelDisplay) dom.currentModelDisplay.textContent = activeModel.name;
+      if (dom.currentModelCapability) dom.currentModelCapability.textContent = activeModel.capability;
+
+      // Adapt composer placeholder and visual styling based on model type
+      const composerBox = dom.composerTextarea?.closest('.composer-input-box');
+      if (activeModel.isImage || activeModel.type === 'image') {
+        if (composerBox) composerBox.classList.add('image-mode');
+        if (dom.composerTextarea) dom.composerTextarea.placeholder = 'Describe the image you want to generate with Puter AI...';
+      } else {
+        if (composerBox) composerBox.classList.remove('image-mode');
+        if (dom.composerTextarea) dom.composerTextarea.placeholder = 'Message Aira or upload an image...';
+      }
     }
   }
 
@@ -384,7 +511,8 @@
     state.activeModelId = modelId;
     renderModelSelector();
     saveLocalState();
-    showToast(`Switched engine to ${dom.currentModelDisplay.textContent}`, 'info');
+    const activeModel = state.availableModels.find(m => m.id === modelId);
+    showToast(`Switched engine to ${activeModel ? activeModel.name : modelId}`, 'info');
   }
 
   // ==========================================
@@ -671,6 +799,9 @@
     const conv = state.conversations.find(c => c.id === state.activeConversationId);
     if (!conv) return;
 
+    // Reset user scroll state on new message send
+    isUserScrolledUp = false;
+
     // Auto update conversation title on first message
     if (conv.messages.length === 0 && text) {
       conv.title = text.slice(0, 36) + (text.length > 36 ? '...' : '');
@@ -691,8 +822,108 @@
     renderActiveConversation();
     saveConversations();
 
-    // Trigger AI Generation
-    await generateAIResponse(conv);
+    // Check if the current model is an Image Generation model
+    const activeModelObj = state.availableModels.find(m => m.id === state.activeModelId);
+    if (activeModelObj && (activeModelObj.isImage || activeModelObj.type === 'image')) {
+      await generateImageInChat(conv, text);
+    } else {
+      await generateAIResponse(conv);
+    }
+  }
+
+  // Direct Image Generation in Chat Flow
+  async function generateImageInChat(conv, promptText) {
+    state.isGenerating = true;
+    updateSendButtonState(true);
+
+    const activeModelObj = state.availableModels.find(m => m.id === state.activeModelId);
+    const modelLabel = activeModelObj ? activeModelObj.name : state.activeModelId;
+
+    const aiMsgId = 'msg_' + Date.now();
+    const aiMsg = {
+      id: aiMsgId,
+      role: 'assistant',
+      content: `🎨 Generating image with **${escapeHTML(modelLabel)}**...\n\n*"${escapeHTML(promptText)}"*`,
+      timestamp: Date.now(),
+      model: state.activeModelId
+    };
+    conv.messages.push(aiMsg);
+
+    dom.welcomeContainer.style.display = 'none';
+    dom.messagesContainer.style.display = 'flex';
+    renderMessageElement(aiMsg, conv.messages.length - 1);
+    scrollToBottom(true);
+
+    try {
+      if (!window.puter || !puter.ai || !puter.ai.txt2img) {
+        throw new Error('Puter.ai Image Generation API (puter.ai.txt2img) is not available.');
+      }
+
+      const imgResult = await puter.ai.txt2img(promptText, {
+        model: state.activeModelId
+      });
+
+      let imgUrl = '';
+      if (typeof imgResult === 'string') {
+        imgUrl = imgResult;
+      } else if (imgResult && imgResult.src) {
+        imgUrl = imgResult.src;
+      } else if (imgResult && imgResult.url) {
+        imgUrl = imgResult.url;
+      } else if (imgResult instanceof HTMLImageElement) {
+        imgUrl = imgResult.src;
+      }
+
+      if (!imgUrl) {
+        throw new Error('Image generation succeeded but no image data was returned.');
+      }
+
+      aiMsg.content = `Here is your generated image for: **"${promptText}"**`;
+      aiMsg.attachment = {
+        dataUrl: imgUrl,
+        name: `aira_${Date.now()}.png`
+      };
+
+      // Add to gallery
+      const galleryItem = {
+        id: 'img_' + Date.now(),
+        prompt: promptText,
+        src: imgUrl,
+        timestamp: Date.now(),
+        model: state.activeModelId
+      };
+      state.generatedImages.unshift(galleryItem);
+      renderGallery();
+      saveGeneratedImages();
+
+      // Refresh message view
+      const msgElem = document.getElementById(`msg_${aiMsgId}`);
+      if (msgElem) {
+        const bubble = msgElem.querySelector('.message-bubble');
+        if (bubble) {
+          bubble.innerHTML = `
+            <img src="${imgUrl}" class="chat-attachment-image" alt="${escapeHTML(promptText)}" onclick="window.airaApp.openLightbox('${imgUrl}', '${escapeHTML(promptText)}')">
+            <div class="markdown-body"><p>Here is your generated image for: <strong>"${escapeHTML(promptText)}"</strong></p></div>
+          `;
+        }
+      }
+      scrollToBottom(true);
+      showToast('Image generated successfully!', 'success');
+
+    } catch (err) {
+      console.error('Puter AI Image generation error:', err);
+      aiMsg.content = `⚠️ **Image Generation Error:** ${err.message || 'Unknown error'}\n\n*Tip: Try a different prompt or check network connection.*`;
+      const bubble = document.getElementById(`bubble_${aiMsgId}`);
+      if (bubble) {
+        const markdownBody = bubble.querySelector('.markdown-body');
+        if (markdownBody) markdownBody.innerHTML = typeof marked !== 'undefined' ? marked.parse(aiMsg.content) : escapeHTML(aiMsg.content);
+      }
+      showToast('Image generation failed', 'error');
+    } finally {
+      state.isGenerating = false;
+      updateSendButtonState(false);
+      saveConversations();
+    }
   }
 
   async function generateAIResponse(conv) {
@@ -720,7 +951,7 @@
       markdownBody.innerHTML = `<span class="streaming-cursor"></span>`;
     }
 
-    scrollToBottom();
+    scrollToBottom(true);
 
     try {
       if (!window.puter || !puter.ai) {
@@ -759,6 +990,14 @@
       console.log(`Puter AI calling chat() with model ${state.activeModelId}...`);
 
       let fullContent = '';
+      let lastRenderTime = 0;
+      let renderPending = false;
+
+      const updateStreamingUI = (text) => {
+        if (!markdownBody) return;
+        markdownBody.innerHTML = (typeof marked !== 'undefined' ? marked.parse(text) : escapeHTML(text)) + `<span class="streaming-cursor"></span>`;
+        scrollToBottom();
+      };
       
       // Call Puter AI streaming chat
       const response = await puter.ai.chat(promptMessages, {
@@ -773,11 +1012,16 @@
           const piece = (chunk && chunk.text) ? chunk.text : (chunk && chunk.message && chunk.message.content) ? chunk.message.content : (typeof chunk === 'string' ? chunk : '');
           fullContent += piece;
           aiMsg.content = fullContent;
-          if (markdownBody) {
-            markdownBody.innerHTML = (typeof marked !== 'undefined' ? marked.parse(fullContent) : escapeHTML(fullContent)) + `<span class="streaming-cursor"></span>`;
-            enhanceCodeBlocks(bubble);
+
+          const now = performance.now();
+          if (now - lastRenderTime > 40 && !renderPending) {
+            renderPending = true;
+            requestAnimationFrame(() => {
+              updateStreamingUI(fullContent);
+              lastRenderTime = performance.now();
+              renderPending = false;
+            });
           }
-          scrollToBottom();
         }
       } else if (response) {
         // Fallback for non-streaming response
@@ -786,10 +1030,10 @@
         aiMsg.content = fullContent;
       }
 
-      // Finalize message rendering
+      // Finalize message rendering & apply code highlighting once
       if (markdownBody) {
         markdownBody.innerHTML = typeof marked !== 'undefined' ? marked.parse(aiMsg.content) : escapeHTML(aiMsg.content);
-        enhanceCodeBlocks(bubble);
+        if (bubble) enhanceCodeBlocks(bubble);
       }
 
       // Auto-speech if enabled in preferences
@@ -1462,6 +1706,64 @@
     // Lightbox Modal
     dom.lightboxCloseBtn.onclick = closeLightbox;
     dom.lightboxBackdrop.onclick = closeLightbox;
+
+    // Scroll state tracking to prevent fighting the user
+    if (dom.chatCanvas) {
+      dom.chatCanvas.addEventListener('scroll', () => {
+        const threshold = 80;
+        const distanceFromBottom = dom.chatCanvas.scrollHeight - dom.chatCanvas.scrollTop - dom.chatCanvas.clientHeight;
+        isUserScrolledUp = distanceFromBottom > threshold;
+      }, { passive: true });
+    }
+
+    // Keyboard focus handling
+    if (dom.composerTextarea) {
+      dom.composerTextarea.addEventListener('focus', () => {
+        setTimeout(() => {
+          if (!isUserScrolledUp) scrollToBottom(true);
+        }, 300);
+      });
+    }
+  }
+
+  let isUserScrolledUp = false;
+
+  function scrollToBottom(force = false) {
+    if (!dom.chatCanvas) return;
+    if (!force && isUserScrolledUp) return;
+    requestAnimationFrame(() => {
+      dom.chatCanvas.scrollTop = dom.chatCanvas.scrollHeight;
+    });
+  }
+
+  function handleBackButton() {
+    // 1. If lightbox is open, close it
+    if (dom.lightboxModal && dom.lightboxModal.style.display === 'flex') {
+      closeLightbox();
+      return true;
+    }
+    // 2. If settings modal is open, close it
+    if (dom.settingsModal && dom.settingsModal.style.display === 'flex') {
+      dom.settingsModal.style.display = 'none';
+      return true;
+    }
+    // 3. If mobile sidebar is open, close it
+    if (dom.sidebar && dom.sidebar.classList.contains('open')) {
+      closeMobileSidebar();
+      return true;
+    }
+    // 4. If model menu is open, close it
+    if (dom.modelMenu && dom.modelMenu.classList.contains('open')) {
+      dom.modelMenu.classList.remove('open');
+      dom.modelSelectBtn?.classList.remove('open');
+      return true;
+    }
+    // 5. If in Image Studio tab, switch back to chat tab
+    if (state.activeTab === 'image') {
+      switchTab('chat');
+      return true;
+    }
+    return false;
   }
 
   function switchTab(tab) {
@@ -1547,10 +1849,6 @@
     }, 3200);
   }
 
-  function scrollToBottom() {
-    dom.chatCanvas.scrollTop = dom.chatCanvas.scrollHeight;
-  }
-
   function formatTime(timestamp) {
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -1567,9 +1865,10 @@
     }[tag] || tag));
   }
 
-  // Global exposure for lightbox onclick handlers
+  // Global exposure for lightbox and Android native WebView bridge
   window.airaApp = {
-    openLightbox
+    openLightbox,
+    handleBackButton
   };
 
   // Start app on DOM ready
