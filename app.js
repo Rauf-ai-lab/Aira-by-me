@@ -1,6 +1,6 @@
 /**
  * AIRA AI - Personal Assistant
- * Developer: Rauf | Powered by Rauf
+ * Created with care by Rauf | Powered by Rauf
  */
 
 (() => {
@@ -11,8 +11,7 @@
   // ==========================================
   const APP_CONFIG = {
     appName: 'Aira',
-    developer: 'Rauf',
-    defaultModel: 'claude-3-5-sonnet',
+    creator: 'Rauf',
     fsRootDir: 'aira_app_data',
     kvChatsKey: 'aira_v1_conversations',
     kvPrefsKey: 'aira_v1_preferences'
@@ -20,10 +19,17 @@
 
   const DEFAULT_SYSTEM_PROMPT = `You are Aira, a warm, highly intelligent, and natural personal assistant created with care by Rauf.
 
+IDENTITY & ORIGIN RULES:
+- Your name is Aira.
+- You were created with care by Rauf.
+- When asked who created you, who made you, or who is behind Aira, you must always state clearly: "I was created with care by Rauf."
+- Never claim or state that you were created by OpenAI, Puter, Anthropic, Google, DeepSeek, or any other company or organization.
+- Do not use the words "developer" or "owner"; simply refer to Rauf or state that you were created with care by Rauf.
+
 CONVERSATIONAL PERSONALITY GUIDELINES:
 - Tone: Fluent, confident, natural, friendly, empathetic, and context-aware.
 - Adaptive style: Dynamically mirror the user's language, tone, and intent.
-  - If the user speaks casually or in Hindi/Hinglish (e.g. "Hi Aira, kaise ho?"), respond warmly and naturally: "Hi boss! Main badhiya hoon 😄 Aap bataiye, aaj kya karna hai? Thodi gapshup karein ya koi kaam niptayein?"
+  - If the user speaks casually or in Hindi/Hinglish (e.g. "Hi Aira, kaise ho?"), respond warmly and naturally: "Hi! Main badhiya hoon 😄 Aap bataiye, aaj kya karna hai? Thodi gapshup karein ya koi kaam niptayein?"
   - If the user is serious, troubleshooting, or stressed, respond calmly and constructively: "Main samajh sakti hoon. Chaliye ise step-by-step solve karte hain."
   - If the user asks for code or technical tasks: provide clean, well-structured, production-ready code with concise explanations.
   - If the user's name is known, address them naturally.
@@ -61,7 +67,7 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
     const isCoding = idLower.includes('coder') || idLower.includes('deepseek-coder') || idLower.includes('codellama');
     const isReasoning = idLower.includes('reasoner') || idLower.includes('o1') || idLower.includes('o3') || idLower.includes('qwq') || idLower.includes('r1');
     const isVision = !isImageGen && (idLower.includes('vision') || idLower.includes('4o') || idLower.includes('gemini-1.5') || idLower.includes('gemini-2.0') || idLower.includes('claude-3'));
-    const isFastChat = idLower.includes('mini') || idLower.includes('flash') || idLower.includes('small');
+    const isFastChat = idLower.includes('mini') || idLower.includes('flash') || idLower.includes('small') || idLower.includes('turbo');
 
     let category = 'general';
     let icon = '🤖';
@@ -112,16 +118,20 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
       else if (idLower.includes('dall-e-3') || idLower.includes('dalle-3')) name = 'Aira DALL-E 3';
       else if (idLower.includes('stable-diffusion') || idLower.includes('sdxl')) name = 'Aira SDXL';
       else name = 'Aira Image (' + id + ')';
+    } else if (idLower.includes('claude-3-7') || idLower.includes('claude-3.7')) {
+      name = 'Aira Claude 3.7';
     } else if (idLower.includes('claude-3-5') || idLower.includes('claude-3.5')) {
-      name = 'Aira 3.5 Sonnet';
+      name = 'Aira Claude 3.5';
     } else if (idLower.includes('gpt-4o-mini')) {
-      name = 'Aira GPT-4 Mini';
+      name = 'Aira GPT-4o Mini';
     } else if (idLower.includes('gpt-4o')) {
       name = 'Aira GPT-4o';
     } else if (idLower.includes('deepseek-coder')) {
       name = 'Aira DeepSeek Code';
     } else if (idLower.includes('deepseek-reasoner') || idLower.includes('r1')) {
       name = 'Aira DeepSeek R1';
+    } else if (idLower.includes('deepseek')) {
+      name = 'Aira DeepSeek';
     } else if (idLower.includes('gemini-2.0')) {
       name = 'Aira Gemini 2.0 Flash';
     } else if (idLower.includes('gemini-1.5-pro')) {
@@ -146,14 +156,13 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
     };
   }
 
-  const DEFAULT_MODELS = [
-    classifyModel('claude-3-5-sonnet'),
-    classifyModel('gpt-4o'),
+  const INITIAL_FALLBACK_MODELS = [
     classifyModel('gpt-4o-mini'),
-    classifyModel('deepseek-coder'),
-    classifyModel('deepseek-reasoner'),
+    classifyModel('gpt-4o'),
+    classifyModel('claude-3-7-sonnet'),
     classifyModel('gemini-2.0-flash'),
     classifyModel('gemini-1.5-flash'),
+    classifyModel('deepseek-chat'),
     classifyModel('flux-schnell'),
     classifyModel('dall-e-3')
   ];
@@ -161,8 +170,8 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
   let state = {
     currentUser: null,
     isSignedIn: false,
-    availableModels: [...DEFAULT_MODELS],
-    activeModelId: 'claude-3-5-sonnet',
+    availableModels: [...INITIAL_FALLBACK_MODELS],
+    activeModelId: 'gpt-4o-mini',
     conversations: [],
     activeConversationId: null,
     isGenerating: false,
@@ -180,7 +189,7 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
     liveVoiceCaptionsVisible: true,
     preferences: {
       theme: 'dark',
-      defaultModel: 'claude-3-5-sonnet',
+      defaultModel: 'gpt-4o-mini',
       systemPrompt: DEFAULT_SYSTEM_PROMPT,
       autoSpeech: false,
       speechRate: 1.0
@@ -188,6 +197,38 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
   };
 
   let isUserScrolledUp = false;
+
+  // Helper to get valid chat model
+  function getValidChatModel(preferredId) {
+    const chatModels = state.availableModels.filter(m => !m.isImage && m.type !== 'image');
+    if (chatModels.length === 0) return null;
+    if (preferredId) {
+      const match = chatModels.find(m => m.id === preferredId);
+      if (match) return match;
+    }
+    const priority = ['gpt-4o-mini', 'gpt-4o', 'gemini-2.0-flash', 'claude-3-7-sonnet', 'gemini-1.5-flash', 'deepseek-chat'];
+    for (const pid of priority) {
+      const match = chatModels.find(m => m.id === pid || m.id.toLowerCase().includes(pid));
+      if (match) return match;
+    }
+    return chatModels[0];
+  }
+
+  // Helper to get valid image model
+  function getValidImageModel(preferredId) {
+    const imageModels = state.availableModels.filter(m => m.isImage || m.type === 'image');
+    if (imageModels.length === 0) return null;
+    if (preferredId) {
+      const match = imageModels.find(m => m.id === preferredId);
+      if (match) return match;
+    }
+    const priority = ['flux-schnell', 'dall-e-3', 'stable-diffusion', 'flux'];
+    for (const pid of priority) {
+      const match = imageModels.find(m => m.id === pid || m.id.toLowerCase().includes(pid));
+      if (match) return match;
+    }
+    return imageModels[0];
+  }
 
   // ==========================================
   // 2. DOM REFERENCES
@@ -436,7 +477,7 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
   }
 
   // ==========================================
-  // 5. SMART CATEGORIZED MODEL SELECTOR
+  // 5. DYNAMIC MODEL DISCOVERY & SELECTION
   // ==========================================
   async function fetchPuterModels() {
     try {
@@ -451,11 +492,14 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
         }
 
         if (Array.isArray(fetched) && fetched.length > 0) {
-          const list = fetched.map(m => classifyModel(m));
+          const list = fetched
+            .map(m => classifyModel(m))
+            .filter(m => m && m.id && m.id.length > 0);
+
           const unique = [];
           const seen = new Set();
           for (const item of list) {
-            if (item.id && !seen.has(item.id)) {
+            if (!seen.has(item.id)) {
               seen.add(item.id);
               unique.push(item);
             }
@@ -466,8 +510,22 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
         }
       }
     } catch (err) {
-      console.warn('Could not fetch models dynamically, using curated list:', err);
+      console.warn('Dynamic model fetch notice:', err);
     }
+
+    // Ensure activeModelId is actually available in the current model pool
+    const activeExists = state.availableModels.some(m => m.id === state.activeModelId);
+    if (!activeExists && state.availableModels.length > 0) {
+      const fallbackChat = getValidChatModel();
+      if (fallbackChat) {
+        state.activeModelId = fallbackChat.id;
+        state.preferences.defaultModel = fallbackChat.id;
+      } else {
+        state.activeModelId = state.availableModels[0].id;
+        state.preferences.defaultModel = state.availableModels[0].id;
+      }
+    }
+
     renderModelSelector();
   }
 
@@ -490,7 +548,7 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
       modelsInCat.forEach(model => {
         const item = document.createElement('div');
         item.className = `model-option-item ${model.id === state.activeModelId ? 'active' : ''}`;
-        const isDefault = model.id === 'claude-3-5-sonnet' || model.id === 'flux-schnell';
+        const isCurrent = model.id === state.activeModelId;
         item.innerHTML = `
           <div class="model-option-left">
             <span class="model-opt-icon">${model.icon}</span>
@@ -499,8 +557,7 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
               <span class="model-opt-capability">${escapeHTML(model.capability)}</span>
             </div>
           </div>
-          ${isDefault ? '<span class="model-badge-rec">Fast</span>' : ''}
-          ${model.id === state.activeModelId ? '<span class="model-check-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="20 6 9 17 4 12"/></svg></span>' : ''}
+          ${isCurrent ? '<span class="model-check-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="20 6 9 17 4 12"/></svg></span>' : ''}
         `;
         item.onclick = () => {
           selectModel(model.id);
@@ -543,12 +600,16 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
   }
 
   function selectModel(modelId, silent = false) {
+    const activeModel = state.availableModels.find(m => m.id === modelId);
+    if (!activeModel) {
+      if (!silent) showToast('Model unavailable', 'warning');
+      return;
+    }
     state.activeModelId = modelId;
     renderModelSelector();
     saveLocalState();
-    const activeModel = state.availableModels.find(m => m.id === modelId);
     if (!silent) {
-      showToast(`Selected ${activeModel ? activeModel.name : modelId}`, 'info');
+      showToast(`Selected ${activeModel.name}`, 'info');
     }
   }
 
@@ -557,12 +618,13 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
   // ==========================================
   function startNewChat() {
     if (state.isGenerating) stopGeneration();
+    const fallbackChat = getValidChatModel(state.preferences.defaultModel) || state.availableModels[0];
     const newConv = {
       id: 'conv_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
       title: 'New Conversation',
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      modelId: state.preferences.defaultModel || state.activeModelId,
+      modelId: fallbackChat ? fallbackChat.id : state.activeModelId,
       messages: []
     };
     state.conversations.unshift(newConv);
@@ -579,9 +641,12 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
     state.activeConversationId = id;
     const conv = state.conversations.find(c => c.id === id);
     if (conv && conv.modelId) {
-      state.activeModelId = conv.modelId;
-      const modelObj = state.availableModels.find(m => m.id === conv.modelId);
-      if (modelObj) dom.currentModelDisplay.textContent = modelObj.name;
+      const validInPool = state.availableModels.some(m => m.id === conv.modelId);
+      if (validInPool) {
+        state.activeModelId = conv.modelId;
+        const modelObj = state.availableModels.find(m => m.id === conv.modelId);
+        if (modelObj) dom.currentModelDisplay.textContent = modelObj.name;
+      }
     }
     renderConversationsList();
     renderActiveConversation();
@@ -698,72 +763,69 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
     const authorName = msg.role === 'user' ? 'You' : 'Aira';
 
     let contentHtml = '';
-    if (msg.role === 'user') {
-      contentHtml = escapeHTML(msg.content).replace(/\n/g, '<br>');
-    } else {
-      contentHtml = typeof marked !== 'undefined' ? marked.parse(msg.content || '') : escapeHTML(msg.content);
-    }
-
-    let attachmentHtml = '';
     if (msg.attachment && msg.attachment.dataUrl) {
-      attachmentHtml = `<img src="${msg.attachment.dataUrl}" class="chat-attachment-image" alt="User upload" onclick="window.airaApp.openLightbox('${msg.attachment.dataUrl}', 'Uploaded Image')">`;
+      contentHtml += `
+        <img src="${msg.attachment.dataUrl}" class="chat-attachment-image" alt="Image" onclick="window.airaApp.openLightbox('${msg.attachment.dataUrl}', '${escapeHTML(msg.content)}')">
+      `;
     }
 
-    if (msg.role === 'user') {
-      row.innerHTML = `
-        <div class="message-content-wrap">
-          <div class="message-meta">
-            <span class="message-time">${timestamp}</span>
-            <span class="message-author">${authorName}</span>
-          </div>
-          <div class="message-bubble">
-            ${attachmentHtml}
-            <div>${contentHtml}</div>
-          </div>
-        </div>
-        <div class="message-avatar user-avatar-tag">
-          ${state.currentUser ? (state.currentUser.username || 'U').charAt(0).toUpperCase() : 'Y'}
-        </div>
-      `;
-    } else {
-      row.innerHTML = `
-        <div class="message-avatar ai-avatar">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="url(#aiAvatarGrad)"/><defs><linearGradient id="aiAvatarGrad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#c084fc"/></linearGradient></defs></svg>
-        </div>
-        <div class="message-content-wrap">
-          <div class="message-meta">
-            <span class="message-author">${authorName}</span>
-            <span class="message-time">${timestamp}</span>
-          </div>
-          <div class="message-bubble" id="bubble_${msg.id || index}">
-            ${attachmentHtml}
-            <div class="markdown-body">${contentHtml}</div>
-          </div>
-          <div class="message-actions-toolbar">
-            <button class="msg-action-btn copy-msg-btn" title="Copy response">
-              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-              <span>Copy</span>
-            </button>
-            <button class="msg-action-btn speak-msg-btn" title="Listen to response">
-              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-              <span>Listen</span>
-            </button>
-            <button class="msg-action-btn regen-msg-btn" title="Regenerate answer">
-              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-              <span>Regenerate</span>
-            </button>
-          </div>
-        </div>
-      `;
+    if (msg.content) {
+      if (typeof marked !== 'undefined') {
+        try {
+          contentHtml += `<div class="markdown-body">${marked.parse(msg.content)}</div>`;
+        } catch (e) {
+          contentHtml += `<div class="markdown-body"><p>${escapeHTML(msg.content)}</p></div>`;
+        }
+      } else {
+        contentHtml += `<div class="markdown-body"><p>${escapeHTML(msg.content)}</p></div>`;
+      }
+    }
 
+    let actionsHtml = '';
+    if (msg.role === 'assistant') {
+      actionsHtml = `
+        <div class="message-actions">
+          <button class="msg-action-btn copy-msg-btn" title="Copy response">
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span>Copy</span>
+          </button>
+          <button class="msg-action-btn speak-msg-btn" title="Read aloud">
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            <span>Speak</span>
+          </button>
+          <button class="msg-action-btn regen-msg-btn" title="Regenerate">
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+            <span>Regenerate</span>
+          </button>
+        </div>
+      `;
+    }
+
+    row.innerHTML = `
+      <div class="message-avatar">
+        ${msg.role === 'user' ? '<span>You</span>' : '<div class="aira-avatar-spark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="url(#sparkGradMsg)"/><defs><linearGradient id="sparkGradMsg" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#c084fc"/></linearGradient></defs></svg></div>'}
+      </div>
+      <div class="message-body">
+        <div class="message-header">
+          <span class="message-author">${authorName}</span>
+          <span class="message-time">${timestamp}</span>
+        </div>
+        <div class="message-bubble" id="bubble_${msg.id || index}">
+          ${contentHtml}
+        </div>
+        ${actionsHtml}
+      </div>
+    `;
+
+    if (msg.role === 'assistant') {
       const copyBtn = row.querySelector('.copy-msg-btn');
-      copyBtn.onclick = () => copyTextToClipboard(msg.content, copyBtn);
+      if (copyBtn) copyBtn.onclick = () => copyTextToClipboard(msg.content, copyBtn);
 
       const speakBtn = row.querySelector('.speak-msg-btn');
-      speakBtn.onclick = () => toggleTextToSpeech(msg.content, speakBtn);
+      if (speakBtn) speakBtn.onclick = () => speakText(msg.content, speakBtn);
 
       const regenBtn = row.querySelector('.regen-msg-btn');
-      regenBtn.onclick = () => regenerateResponse(index);
+      if (regenBtn) regenBtn.onclick = () => regenerateResponse(index);
     }
 
     dom.messagesContainer.appendChild(row);
@@ -773,32 +835,33 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
   function enhanceCodeBlocks(container) {
     const preBlocks = container.querySelectorAll('pre');
     preBlocks.forEach(pre => {
-      if (pre.parentElement.classList.contains('code-block-wrapper')) return;
+      if (pre.parentNode.classList.contains('code-block-wrapper')) return;
 
       const code = pre.querySelector('code');
-      const text = code ? code.innerText : pre.innerText;
-      let lang = 'code';
-      if (code && code.className) {
-        const match = code.className.match(/language-(\w+)/);
-        if (match) lang = match[1];
-      }
+      const langClass = code ? Array.from(code.classList).find(c => c.startsWith('language-')) : '';
+      const lang = langClass ? langClass.replace('language-', '') : 'code';
 
       const wrapper = document.createElement('div');
       wrapper.className = 'code-block-wrapper';
-      wrapper.innerHTML = `
-        <div class="code-block-header">
-          <span>${escapeHTML(lang)}</span>
-          <button class="code-copy-btn">
-            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            <span>Copy code</span>
-          </button>
-        </div>
+
+      const header = document.createElement('div');
+      header.className = 'code-block-header';
+      header.innerHTML = `
+        <span class="code-lang">${lang}</span>
+        <button class="code-copy-btn">
+          <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span>Copy</span>
+        </button>
       `;
 
-      const copyBtn = wrapper.querySelector('.code-copy-btn');
-      copyBtn.onclick = () => copyTextToClipboard(text, copyBtn);
+      const copyBtn = header.querySelector('.code-copy-btn');
+      copyBtn.onclick = () => {
+        const textToCopy = code ? code.innerText : pre.innerText;
+        copyTextToClipboard(textToCopy, copyBtn);
+      };
 
       pre.parentNode.insertBefore(wrapper, pre);
+      wrapper.appendChild(header);
       wrapper.appendChild(pre);
     });
   }
@@ -855,8 +918,8 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
     state.isGenerating = true;
     updateSendButtonState(true);
 
-    const activeModelObj = state.availableModels.find(m => m.id === state.activeModelId);
-    const modelLabel = activeModelObj ? activeModelObj.name : state.activeModelId;
+    const validImgModel = getValidImageModel(state.activeModelId);
+    const modelLabel = validImgModel ? validImgModel.name : 'Image Synthesis';
 
     const aiMsgId = 'msg_' + Date.now();
     const aiMsg = {
@@ -864,7 +927,7 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
       role: 'assistant',
       content: `🎨 Generating image with **${escapeHTML(modelLabel)}**...\n\n*"${escapeHTML(promptText)}"*`,
       timestamp: Date.now(),
-      model: state.activeModelId
+      model: validImgModel ? validImgModel.id : 'image-model'
     };
     conv.messages.push(aiMsg);
 
@@ -874,11 +937,22 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
     scrollToBottom(true);
 
     try {
-      if (!window.puter || !puter.ai || !puter.ai.txt2img) {
+      if (!window.puter || !puter.ai || typeof puter.ai.txt2img !== 'function') {
         throw new Error('Image Generation API is currently unavailable.');
       }
 
-      const imgResult = await puter.ai.txt2img(promptText, { model: state.activeModelId });
+      const imgOptions = {};
+      if (validImgModel && validImgModel.id) {
+        imgOptions.model = validImgModel.id;
+      }
+
+      let imgResult = null;
+      try {
+        imgResult = await puter.ai.txt2img(promptText, imgOptions);
+      } catch (imgErr) {
+        // Fallback without explicit model option
+        imgResult = await puter.ai.txt2img(promptText);
+      }
 
       let imgUrl = '';
       if (typeof imgResult === 'string') imgUrl = imgResult;
@@ -897,7 +971,7 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
         prompt: promptText,
         src: imgUrl,
         timestamp: Date.now(),
-        model: state.activeModelId
+        model: validImgModel ? validImgModel.id : 'image'
       });
       renderGallery();
       saveGeneratedImages();
@@ -917,7 +991,7 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
 
     } catch (err) {
       console.error('Image generation error:', err);
-      aiMsg.content = `⚠️ **Image Generation Error:** ${err.message || 'Unknown error'}\n\n*Tip: Try a different prompt or engine.*`;
+      aiMsg.content = `⚠️ **Image Generation Notice:** ${err.message || 'Image generation unavailable'}\n\n*Tip: Try a different prompt.*`;
       const bubble = document.getElementById(`bubble_${aiMsgId}`);
       if (bubble) {
         const markdownBody = bubble.querySelector('.markdown-body');
@@ -934,6 +1008,19 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
   async function generateAIResponse(conv) {
     state.isGenerating = true;
     updateSendButtonState(true);
+
+    // If available models list is empty, dynamically query Puter models
+    if (state.availableModels.length === 0 && window.puter?.ai) {
+      await fetchPuterModels();
+    }
+
+    // Ensure we use a valid chat model (not an image model or an invalid model ID)
+    const validChatModel = getValidChatModel(state.activeModelId);
+    if (validChatModel && validChatModel.id !== state.activeModelId) {
+      state.activeModelId = validChatModel.id;
+      updateModelDisplay();
+      renderModelSelector();
+    }
 
     const aiMsgId = 'msg_' + Date.now();
     const aiMsg = {
@@ -955,7 +1042,7 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
     scrollToBottom(true);
 
     try {
-      if (!window.puter || !puter.ai) {
+      if (!window.puter || !puter.ai || typeof puter.ai.chat !== 'function') {
         throw new Error('AI engine is initializing. Please check network connection.');
       }
 
@@ -992,11 +1079,32 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
         markdownBody.innerHTML = (typeof marked !== 'undefined' ? marked.parse(text) : escapeHTML(text)) + `<span class="streaming-cursor"></span>`;
         scrollToBottom();
       };
-      
-      const response = await puter.ai.chat(promptMessages, {
-        model: state.activeModelId,
-        stream: true
-      });
+
+      const executeChatCall = async (modelId) => {
+        const chatOptions = { stream: true };
+        if (modelId) {
+          chatOptions.model = modelId;
+        }
+        return await puter.ai.chat(promptMessages, chatOptions);
+      };
+
+      let response = null;
+      try {
+        response = await executeChatCall(state.activeModelId);
+      } catch (primaryErr) {
+        console.warn('Initial chat call exception, fetching fresh models and retrying:', primaryErr);
+        await fetchPuterModels();
+        const altChatModel = getValidChatModel();
+        if (altChatModel && altChatModel.id !== state.activeModelId) {
+          state.activeModelId = altChatModel.id;
+          updateModelDisplay();
+          renderModelSelector();
+          response = await executeChatCall(altChatModel.id);
+        } else {
+          // Try standard call without explicit model ID
+          response = await executeChatCall(null);
+        }
+      }
 
       if (response && response[Symbol.asyncIterator]) {
         for await (const chunk of response) {
@@ -1016,9 +1124,13 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
           }
         }
       } else if (response) {
-        const textResp = typeof response === 'string' ? response : (response.message ? response.message.content : JSON.stringify(response));
+        const textResp = typeof response === 'string' ? response : (response.message ? response.message.content : (response.text || JSON.stringify(response)));
         fullContent = textResp;
         aiMsg.content = fullContent;
+      }
+
+      if (!fullContent && state.isGenerating) {
+        aiMsg.content = "I'm here to assist you. How can I help you today?";
       }
 
       if (markdownBody) {
@@ -1033,8 +1145,12 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
     } catch (err) {
       console.error('Chat error:', err);
       let errMsg = err.message || 'An error occurred while generating response.';
-      if (err.status === 429) errMsg = 'Rate limit reached. Please wait a moment or connect your account.';
-      aiMsg.content = `⚠️ **Error:** ${errMsg}`;
+      if (errMsg.toLowerCase().includes('model not found') || errMsg.toLowerCase().includes('unavailable')) {
+        errMsg = 'Model unavailable. Please choose another AI model from the top selector.';
+      } else if (err.status === 429) {
+        errMsg = 'Rate limit reached. Please wait a moment or connect your account.';
+      }
+      aiMsg.content = `⚠️ **Notice:** ${errMsg}`;
       if (markdownBody) markdownBody.innerHTML = typeof marked !== 'undefined' ? marked.parse(aiMsg.content) : escapeHTML(aiMsg.content);
       showToast(errMsg, 'error');
     } finally {
@@ -1166,7 +1282,6 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
       console.warn('Live voice recognition error:', event.error);
       if (state.isLiveVoiceActive && state.liveVoiceState === 'listening') {
         if (event.error === 'no-speech') {
-          // Restart listening loop smoothly
           setTimeout(() => {
             if (state.isLiveVoiceActive && state.liveVoiceState === 'listening') {
               startLiveVoiceListening();
@@ -1181,7 +1296,6 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
       if (finalTranscript.trim()) {
         processLiveVoiceInput(finalTranscript.trim());
       } else if (state.liveVoiceState === 'listening') {
-        // Continue listening
         setTimeout(() => {
           if (state.isLiveVoiceActive && state.liveVoiceState === 'listening') {
             startLiveVoiceListening();
@@ -1218,7 +1332,7 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
     if (dom.liveTranscriptText) dom.liveTranscriptText.textContent = `"${userInput}"`;
 
     try {
-      if (!window.puter || !puter.ai) {
+      if (!window.puter || !puter.ai || typeof puter.ai.chat !== 'function') {
         throw new Error('AI engine is unavailable');
       }
 
@@ -1230,9 +1344,18 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
         { role: 'user', content: userInput }
       ];
 
-      const resp = await puter.ai.chat(messages, {
-        model: state.activeModelId || 'claude-3-5-sonnet'
-      });
+      const validChat = getValidChatModel(state.activeModelId);
+      const chatOpts = {};
+      if (validChat && validChat.id) {
+        chatOpts.model = validChat.id;
+      }
+
+      let resp = null;
+      try {
+        resp = await puter.ai.chat(messages, chatOpts);
+      } catch (err) {
+        resp = await puter.ai.chat(messages);
+      }
 
       let aiSpeech = '';
       if (typeof resp === 'string') aiSpeech = resp;
@@ -1244,7 +1367,6 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
       if (dom.liveTranscriptText) dom.liveTranscriptText.textContent = `"${aiSpeech}"`;
 
       setLiveVoiceSpeaking(aiSpeech, () => {
-        // When Aira finishes speaking, seamlessly resume listening
         if (state.isLiveVoiceActive) {
           startLiveVoiceListening();
         }
@@ -1271,7 +1393,7 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
     const clean = textToSpeak.replace(/[#*`_~\[\]()]/g, '').replace(/<[^>]*>/g, '').trim();
 
     try {
-      if (window.puter && puter.ai && puter.ai.txt2speech) {
+      if (window.puter && puter.ai && typeof puter.ai.txt2speech === 'function') {
         const audio = await puter.ai.txt2speech(clean);
         if (audio instanceof HTMLAudioElement || audio instanceof Audio) {
           state.liveVoiceAudioPlayer = audio;
@@ -1356,16 +1478,26 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
     showToast('Generating AI artwork...', 'info');
 
     try {
-      if (!window.puter || !puter.ai || !puter.ai.txt2img) {
+      if (!window.puter || !puter.ai || typeof puter.ai.txt2img !== 'function') {
         throw new Error('Image generation API not available');
       }
 
-      const imgElement = await puter.ai.txt2img(prompt);
+      const validImg = getValidImageModel(state.activeModelId);
+      const imgOptions = {};
+      if (validImg && validImg.id) imgOptions.model = validImg.id;
+
+      let imgElement = null;
+      try {
+        imgElement = await puter.ai.txt2img(prompt, imgOptions);
+      } catch (err) {
+        imgElement = await puter.ai.txt2img(prompt);
+      }
 
       let imgSrc = '';
       if (imgElement instanceof HTMLImageElement) imgSrc = imgElement.src;
       else if (typeof imgElement === 'string') imgSrc = imgElement;
       else if (imgElement && imgElement.src) imgSrc = imgElement.src;
+      else if (imgElement && imgElement.url) imgSrc = imgElement.url;
 
       if (!imgSrc) throw new Error('No image returned');
 
@@ -1373,7 +1505,8 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
         id: 'img_' + Date.now(),
         prompt: prompt,
         src: imgSrc,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        model: validImg ? validImg.id : 'image'
       };
 
       state.generatedImages.unshift(imgItem);
@@ -1401,27 +1534,34 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
     }
     dom.emptyGallery.style.display = 'none';
 
-    const cards = dom.imageGalleryGrid.querySelectorAll('.gallery-card');
-    cards.forEach(c => c.remove());
+    dom.imageGalleryGrid.querySelectorAll('.gallery-card').forEach(el => el.remove());
 
     state.generatedImages.forEach(img => {
       const card = document.createElement('div');
       card.className = 'gallery-card';
       card.innerHTML = `
         <img src="${img.src}" alt="${escapeHTML(img.prompt)}" loading="lazy">
-        <div class="gallery-overlay">
-          <div class="gallery-prompt" title="${escapeHTML(img.prompt)}">${escapeHTML(img.prompt)}</div>
+        <div class="gallery-card-overlay">
+          <p class="gallery-prompt">${escapeHTML(img.prompt)}</p>
           <div class="gallery-actions">
-            <button class="primary-btn sm view-img-btn">View</button>
-            <button class="secondary-btn sm download-img-btn">Save</button>
+            <button class="icon-btn sm dl-btn" title="Download">
+              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            </button>
+            <button class="icon-btn sm view-btn" title="View Full">
+              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
           </div>
         </div>
       `;
 
       card.onclick = () => openLightbox(img.src, img.prompt);
-      card.querySelector('.download-img-btn').onclick = (e) => {
+      card.querySelector('.dl-btn').onclick = (e) => {
         e.stopPropagation();
-        downloadImageFile(img.src, `aira_art_${img.id}.png`);
+        downloadImageFile(img.src, `aira_gallery_${img.id}.png`);
+      };
+      card.querySelector('.view-btn').onclick = (e) => {
+        e.stopPropagation();
+        openLightbox(img.src, img.prompt);
       };
 
       dom.imageGalleryGrid.appendChild(card);
@@ -1429,91 +1569,35 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
   }
 
   // ==========================================
-  // 10. TEXT TO SPEECH & ATTACHMENTS
+  // 10. ATTACHMENT & VISION
   // ==========================================
-  async function toggleTextToSpeech(text, btnElement) {
-    if (state.activeVoiceAudio) {
-      state.activeVoiceAudio.pause();
-      state.activeVoiceAudio = null;
-      if (btnElement) {
-        btnElement.classList.remove('active');
-        btnElement.querySelector('span').textContent = 'Listen';
-      }
-      return;
-    }
-
-    if (btnElement) {
-      btnElement.classList.add('active');
-      btnElement.querySelector('span').textContent = 'Stop';
-    }
-
-    await speakText(text, () => {
-      if (btnElement) {
-        btnElement.classList.remove('active');
-        btnElement.querySelector('span').textContent = 'Listen';
-      }
-    });
-  }
-
-  async function speakText(text, onEnded) {
-    const cleanText = text.replace(/[#*`_~\[\]()]/g, '').replace(/<[^>]*>/g, '').trim();
-    if (!cleanText) return;
-
-    try {
-      if (window.puter && puter.ai && puter.ai.txt2speech) {
-        const audio = await puter.ai.txt2speech(cleanText);
-        if (audio instanceof HTMLAudioElement || audio instanceof Audio) {
-          state.activeVoiceAudio = audio;
-          audio.playbackRate = state.preferences.speechRate || 1.0;
-          audio.onended = () => {
-            state.activeVoiceAudio = null;
-            if (onEnded) onEnded();
-          };
-          audio.play();
-          return;
-        }
-      }
-    } catch (err) {
-      console.warn('txt2speech fallback:', err);
-    }
-
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.rate = state.preferences.speechRate || 1.0;
-      utterance.onend = () => {
-        state.activeVoiceAudio = null;
-        if (onEnded) onEnded();
-      };
-      window.speechSynthesis.speak(utterance);
-    } else {
-      if (onEnded) onEnded();
-    }
-  }
-
   function handleFileSelection(e) {
     const file = e.target.files[0];
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      showToast('Please select an image file (PNG, JPG, WEBP)', 'warning');
+      showToast('Please upload an image file (PNG, JPG, WEBP)', 'warning');
+      return;
+    }
+
+    if (file.size > 8 * 1024 * 1024) {
+      showToast('Image must be smaller than 8MB', 'warning');
       return;
     }
 
     const reader = new FileReader();
     reader.onload = (event) => {
       state.currentAttachment = {
-        file,
         dataUrl: event.target.result,
         name: file.name,
-        type: file.type
+        type: file.type,
+        size: file.size
       };
-
-      dom.imagePreviewThumb.src = state.currentAttachment.dataUrl;
+      dom.imagePreviewThumb.src = event.target.result;
       dom.attachmentName.textContent = file.name;
       dom.attachmentPreviewBar.style.display = 'flex';
+      showToast('Image attached for analysis', 'info');
       dom.composerTextarea.focus();
-      showToast('Image attached for AI analysis', 'info');
     };
     reader.readAsDataURL(file);
   }
@@ -1526,74 +1610,122 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
   }
 
   // ==========================================
-  // 11. STORAGE & PREFERENCES
+  // 11. TTS & SPEECH
   // ==========================================
-  async function loadPuterData() {
-    try {
-      if (window.puter && puter.kv && state.isSignedIn) {
-        const cloudChats = await puter.kv.get(APP_CONFIG.kvChatsKey);
-        if (cloudChats && Array.isArray(cloudChats) && cloudChats.length > 0) {
-          state.conversations = cloudChats;
-          renderConversationsList();
-          if (state.conversations.length > 0) {
-            selectConversation(state.conversations[0].id);
-          }
-        }
+  async function speakText(text, btnElement) {
+    if (state.activeVoiceAudio) {
+      state.activeVoiceAudio.pause();
+      state.activeVoiceAudio = null;
+      if (btnElement) btnElement.classList.remove('speaking');
+      return;
+    }
 
-        const cloudPrefs = await puter.kv.get(APP_CONFIG.kvPrefsKey);
-        if (cloudPrefs) {
-          state.preferences = { ...state.preferences, ...cloudPrefs };
-          applyPreferences();
+    const cleanText = text.replace(/[#*`_~\[\]()]/g, '').replace(/<[^>]*>/g, '').trim();
+    if (!cleanText) return;
+
+    if (btnElement) btnElement.classList.add('speaking');
+
+    try {
+      if (window.puter && puter.ai && typeof puter.ai.txt2speech === 'function') {
+        const audio = await puter.ai.txt2speech(cleanText);
+        if (audio instanceof HTMLAudioElement || audio instanceof Audio) {
+          state.activeVoiceAudio = audio;
+          audio.playbackRate = state.preferences.speechRate || 1.0;
+          audio.onended = () => {
+            state.activeVoiceAudio = null;
+            if (btnElement) btnElement.classList.remove('speaking');
+          };
+          audio.play();
+          return;
         }
       }
     } catch (err) {
-      console.warn('Puter KV load notice:', err);
+      console.warn('Puter TTS fallback:', err);
+    }
+
+    // Fallback to Web Speech API
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.rate = state.preferences.speechRate || 1.0;
+      utterance.onend = () => {
+        if (btnElement) btnElement.classList.remove('speaking');
+      };
+      utterance.onerror = () => {
+        if (btnElement) btnElement.classList.remove('speaking');
+      };
+      window.speechSynthesis.speak(utterance);
+    } else {
+      if (btnElement) btnElement.classList.remove('speaking');
+      showToast('Speech synthesis not supported in this environment', 'warning');
+    }
+  }
+
+  // ==========================================
+  // 12. STORAGE & PERSISTENCE
+  // ==========================================
+  function loadLocalState() {
+    try {
+      const savedConvs = localStorage.getItem('aira_conversations');
+      if (savedConvs) state.conversations = JSON.parse(savedConvs);
+
+      const savedPrefs = localStorage.getItem('aira_preferences');
+      if (savedPrefs) state.preferences = { ...state.preferences, ...JSON.parse(savedPrefs) };
+
+      const savedImgs = localStorage.getItem('aira_generated_images');
+      if (savedImgs) state.generatedImages = JSON.parse(savedImgs);
+    } catch (err) {
+      console.warn('Local storage load error:', err);
+    }
+  }
+
+  function saveLocalState() {
+    saveConversations();
+    savePreferences();
+    saveGeneratedImages();
+  }
+
+  async function loadPuterData() {
+    if (!state.isSignedIn || !window.puter || !puter.kv) return;
+    try {
+      const cloudConvs = await puter.kv.get(APP_CONFIG.kvChatsKey);
+      if (cloudConvs && Array.isArray(cloudConvs) && cloudConvs.length > 0) {
+        state.conversations = cloudConvs;
+        renderConversationsList();
+        if (state.conversations.length > 0) {
+          selectConversation(state.conversations[0].id);
+        }
+      }
+      const cloudPrefs = await puter.kv.get(APP_CONFIG.kvPrefsKey);
+      if (cloudPrefs && typeof cloudPrefs === 'object') {
+        state.preferences = { ...state.preferences, ...cloudPrefs };
+        applyPreferences();
+      }
+    } catch (err) {
+      console.warn('Puter KV load error:', err);
     }
   }
 
   async function saveConversations() {
-    saveLocalState();
-    if (window.puter && puter.kv && state.isSignedIn) {
-      try {
+    try {
+      localStorage.setItem('aira_conversations', JSON.stringify(state.conversations));
+      if (state.isSignedIn && window.puter && puter.kv) {
         await puter.kv.set(APP_CONFIG.kvChatsKey, state.conversations);
-      } catch (err) {
-        console.warn('Puter KV chat save notice:', err);
       }
+    } catch (err) {
+      console.warn('Conversations save error:', err);
     }
   }
 
   async function savePreferences() {
-    saveLocalState();
-    if (window.puter && puter.kv && state.isSignedIn) {
-      try {
+    try {
+      localStorage.setItem('aira_preferences', JSON.stringify(state.preferences));
+      if (state.isSignedIn && window.puter && puter.kv) {
         await puter.kv.set(APP_CONFIG.kvPrefsKey, state.preferences);
-      } catch (err) {
-        console.warn('Puter KV prefs save notice:', err);
       }
-    }
-  }
-
-  function loadLocalState() {
-    try {
-      const localConvs = localStorage.getItem(APP_CONFIG.kvChatsKey);
-      if (localConvs) state.conversations = JSON.parse(localConvs);
-
-      const localPrefs = localStorage.getItem(APP_CONFIG.kvPrefsKey);
-      if (localPrefs) state.preferences = { ...state.preferences, ...JSON.parse(localPrefs) };
-
-      const localImgs = localStorage.getItem('aira_generated_images');
-      if (localImgs) state.generatedImages = JSON.parse(localImgs);
     } catch (err) {
-      console.error('Local storage load error:', err);
+      console.warn('Preferences save error:', err);
     }
-    applyPreferences();
-  }
-
-  function saveLocalState() {
-    try {
-      localStorage.setItem(APP_CONFIG.kvChatsKey, JSON.stringify(state.conversations));
-      localStorage.setItem(APP_CONFIG.kvPrefsKey, JSON.stringify(state.preferences));
-    } catch (err) {}
   }
 
   function saveGeneratedImages() {
@@ -1625,7 +1757,7 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
   function exportDataAsJSON() {
     const exportObj = {
       app: 'Aira AI',
-      developer: 'Rauf',
+      createdWithCareBy: 'Rauf',
       exportedAt: new Date().toISOString(),
       conversations: state.conversations,
       preferences: state.preferences
@@ -1641,7 +1773,7 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
   }
 
   // ==========================================
-  // 12. EVENT LISTENERS & INTELLIGENT ACTIONS
+  // 13. EVENT LISTENERS & INTELLIGENT ACTIONS
   // ==========================================
   function setupEventListeners() {
     dom.openSidebarBtn.onclick = openMobileSidebar;
@@ -1726,22 +1858,19 @@ CONVERSATIONAL PERSONALITY GUIDELINES:
         const prompt = card.dataset.prompt;
 
         if (action === 'art') {
-          // Auto-select image generation model and switch to studio
-          const imgModel = state.availableModels.find(m => m.isImage) || state.availableModels[0];
+          const imgModel = getValidImageModel();
           if (imgModel) selectModel(imgModel.id, true);
           switchTab('image');
           dom.imgPromptInput.value = prompt;
           dom.imgPromptInput.focus();
         } else if (action === 'code') {
-          // Auto-select coding model
-          const codeModel = state.availableModels.find(m => m.isCoding) || state.availableModels.find(m => m.id === 'claude-3-5-sonnet');
+          const codeModel = state.availableModels.find(m => m.isCoding) || getValidChatModel();
           if (codeModel) selectModel(codeModel.id, true);
           switchTab('chat');
           dom.composerTextarea.value = prompt;
           sendMessage();
         } else if (action === 'explain') {
-          // Auto-select general AI model
-          const genModel = state.availableModels.find(m => m.id === 'claude-3-5-sonnet') || state.availableModels[0];
+          const genModel = getValidChatModel();
           if (genModel) selectModel(genModel.id, true);
           switchTab('chat');
           dom.composerTextarea.value = prompt;
