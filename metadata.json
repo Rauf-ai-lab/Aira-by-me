@@ -1,0 +1,6 @@
+{
+  "name": "Aira",
+  "description": "Modern AI chat and assistant powered by Puter.js with streaming AI, multi-model support, voice I/O, image generation, vision analysis, and Puter cloud sync.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
